@@ -11,7 +11,7 @@ $conn = new mysqli($host, $username, $password, $dbname);
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
-
+//sdjfndsjfbdsjb
 // القيم التي سيتم إدخالها
 $product_id = '1';
 $name = 'Example Product';
