@@ -5,37 +5,32 @@ $username = "root";
 $password = ""; 
 $dbname = "e-commerce";
 
-$conn = new mysqli($host, $username, $password, $dbname);
+// إنشاء اتصال بـ MySQL
+$conn = new mysqli($servername, $username, $password, $dbname);
 
 // التحقق من وجود أخطاء في الاتصال
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
-//sdjfndsjfbdsjb
-// القيم التي سيتم إدخالها
-$product_id = '1';
-$name = 'Example Product';
-$description = 'This is an example product description.';
-$price = '19.99';
-$stock = '100';
-$category_id = '2';
-$image = '';
 
-// تحضير الاستعلام SQL مع علامات مجهولة
-$stmt = $conn->prepare('INSERT INTO products (product_id, name, description, price, stock, category_id, image) VALUES (?, ?, ?, ?, ?, ?, ?)');
+// تحديد معرّف المنتج أو أي معايير لتحديد الصورة المطلوبة
+$product_id = '2'; // مثال: استخدم معرّف المنتج الذي ترغب في عرض صورته
 
-// ربط القيم بالعلامات المجهولة
-$stmt->bind_param('issdiss', $product_id, $name, $description, $price, $stock, $category_id, $image);
-
-// تنفيذ الاستعلام
-if ($stmt->execute()) {
-    echo 'Product inserted successfully!';
-} else {
-    echo 'Error: ' . $stmt->error;
-}
-
-// إغلاق الاستعلام
+// استعلام لجلب مسار الصورة من قاعدة البيانات
+$sql = 'SELECT image FROM products WHERE product_id = ?';
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $product_id);
+$stmt->execute();
+$stmt->bind_result($imagePath);
+$stmt->fetch();
 $stmt->close();
+
+// التحقق من وجود مسار الصورة
+if ($imagePath):
+    $imagePath = htmlspecialchars($imagePath); // تعقيم المسار لعرضه بأمان
+else:
+    $imagePath = ''; // إذا لم تكن الصورة موجودة، اترك المسار فارغاً
+endif;
 
 // إغلاق الاتصال
 $conn->close();
@@ -45,18 +40,14 @@ $conn->close();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload and View Image</title>
+    <title>View Image</title>
 </head>
 <body>
-    <h1>Upload Image</h1>
-    <form action="index.php" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <input type="submit" value="Upload Image">
-    </form>
-
-    <?php if ($imagePath): ?>
-        <h1>View Image</h1>
-        <img src="<?php echo htmlspecialchars($imagePath); ?>" alt="Image from database" style="max-width: 100%; height: auto;">
+    <h1>View Image</h1>
+    <?php if (!empty($imagePath)): ?>
+        <img src="<?php echo $imagePath; ?>" alt="Image from database" style="max-width: 100%; height: auto;">
+    <?php else: ?>
+        <p>No image available.</p>
     <?php endif; ?>
 </body>
 </html>
