@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
 
     $user_id = intval($_GET["user_id"]);
     
-    $sql = "SELECT * FROM user WHERE user_id = ?";
+    $sql = "SELECT * FROM users WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param('i', $user_id);
     $stmt->execute();
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     } else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        $sql = "UPDATE user SET fname = ?, email = ?, address = ?, password = ?, phone = ? WHERE user_id = ?";
+        $sql = "UPDATE users SET fname = ?, email = ?, address = ?, password = ?, phone = ? WHERE user_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param('sssssi', $fname, $email, $address, $hashed_password, $phone, $user_id);
 
