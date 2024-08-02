@@ -13,6 +13,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+
 $errorMessage = "";
 $successMessage = "";
 
@@ -80,6 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
     <title>Edit User</title>
     <style>
         .container {
