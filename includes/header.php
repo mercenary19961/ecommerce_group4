@@ -11,7 +11,6 @@ if (session_status() == PHP_SESSION_NONE) {
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-
     <title>Mac store</title>
     <style>
         .card {
@@ -51,7 +50,7 @@ if (session_status() == PHP_SESSION_NONE) {
         .cart-indicator .badge {
             position: absolute;
             top: -5px;
-            right: -10px;
+            right: -5px;
         }
         
         .card_buttons {
@@ -74,7 +73,7 @@ if (session_status() == PHP_SESSION_NONE) {
                             <a class="nav-link" href="products.php">Products</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="contact.php">Contact</a>
+                            <a class="nav-link" href="contact.html">Contact</a>
                         </li>
                         <li class="nav-item cart-indicator">
                             <a class="nav-link" href="cart.php">

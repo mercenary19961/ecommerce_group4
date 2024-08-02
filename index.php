@@ -139,10 +139,10 @@ include 'config/db_connect.php';
                             <a class="nav-link me-4" href="#pro">Products</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link me-4" href="#yearly-sale">Sale</a>
+                            <a class="nav-link me-4" href="sale.php">Sale</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link me-4" href="#aboutus">About us</a>
+                            <a class="nav-link me-4" href="contact.html">Contact us</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Categories</a>
@@ -205,19 +205,48 @@ include 'config/db_connect.php';
               <div class="row d-flex align-items-center">
                 <div class="col-md-6">
                   <div class="banner-content" style="position: relative; top: 15vh;">
-                    <h1 class="display-2 text-uppercase text-dark pb-5">IPHONES</h1>
-                    <a href="products.php" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Product</a>
+                    <h1 class="display-2 text-uppercase text-dark pb-5"><h3>Welcome to <span id="cname"> MAC STORE</span>, your number one source for all Apple products. We're dedicated to providing you the very best of Apple,
+                    with an emphasis on quality, customer service, and uniqueness.</h3></h1>
+                    <a href="products.php" class="btn btn-medium btn-dark text-uppercase btn-rounded-none"style="position: relative; top: 12vh; " >Shop Product</a>
                   </div>
                 </div>
                 <div class="col-md-5">
                   <div class="image-holder">
-                  <img src="images/phone.png" alt="banner" style="position: relative; top: 30vh; right: 20vh;">
+                  <img src="images/ele.shop.png" alt="banner" style="position: relative; top: 18vh; ">
 
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          
+          <div class="swiper-slide">
+            <div class="container">
+              <div class="row d-flex align-items-center">
+                <div class="col-md-6">
+                <div class="banner-content" style="position: relative; top: 15vh;">
+                    <h1 class="display-2 text-uppercase text-dark pb-5">IPHONES</h1>
+                    <a href="products.php" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Product</a>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <div class="image-holder">
+                  <img src="images/phone.png" alt="banner" style="position: relative; top: 18vh; right: 20vh;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        
+     
+         
+  
+        <!-- sliderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+         
+        
+  rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-->
+
             <div class="swiper-slide">
             <div class="container">
               <div class="row d-flex align-items-center">
@@ -239,6 +268,7 @@ include 'config/db_connect.php';
          
         
   rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-->
+  
           <div class="swiper-slide">
             <div class="container">
               <div class="row d-flex align-items-center">
@@ -302,8 +332,7 @@ include 'config/db_connect.php';
       <div class="container">
 
 
-        <h2>Welcome to <span id="cname"> MAC STORE</span>, your number one source for all Apple products. We're dedicated to providing you the very best of Apple,
-           with an emphasis on quality, customer service, and uniqueness.</h2>
+        
         
       </div>
     </section>
@@ -379,7 +408,7 @@ include 'config/db_connect.php';
 </div>
 
 
-      </section>
+      </section><hr>
 
               <!-- ----------------------------------------------- -->
 
@@ -451,7 +480,7 @@ include 'config/db_connect.php';
     </div>
 </div>
       <div class="swiper-pagination position-absolute text-center"></div>
-    </section>
+    </section><hr>
     <!-- prooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
          ooo-->
     <section id="mac-products" class="product-store padding-large position-relative">
@@ -514,7 +543,7 @@ include 'config/db_connect.php';
         ?>
     </div>
 </div>      <div class="swiper-pagination position-absolute text-center"></div>
-    </section>
+    </section><hr>
     <!-- prooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
          ooo-->
    
@@ -522,7 +551,7 @@ include 'config/db_connect.php';
     <div class="container">
         <div class="row">
           <div class="display-header d-flex justify-content-between pb-3">
-            <h2 class="display-7 text-dark text-uppercase">acc</h2>
+            <h2 class="display-7 text-dark text-uppercase">Accessories</h2>
             <div class="btn-right">
               <a href="products.php" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
             </div>
@@ -547,7 +576,7 @@ include 'config/db_connect.php';
                 
                 // عرض الصورة
                 echo "<div class='image-holder'>";
-                echo "<img style='style='  width: 350px; height: 300px;' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
+                echo "<img style='height: 250px; width: 250px';' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
                 echo "</div>"; // image-holder
 
                 // زر إضافة إلى السلة
@@ -594,8 +623,8 @@ include 'config/db_connect.php';
       <div class="row d-flex flex-wrap align-items-center">
         <div class="col-md-6 col-sm-12">
           <div class="text-content offset-4 padding-medium">
-            <h3>10% off</h3>
-            <h2 class="display-2 pb-5 text-uppercase text-dark">New year sale</h2>
+            <h3>UP TO 50% off</h3>
+            <h2 class="display-2 pb-5 text-uppercase text-dark">New sale</h2>
             <a href="products.php" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Sale</a>
           </div>
         </div>
@@ -629,7 +658,7 @@ include 'config/db_connect.php';
           <div class="col-md-4 col-sm-6">
             <div class="copyright"  style="line-hight:3px"style="color:#717171">
               <p>©Copyright2024MacStore.
-                contact us<i class="fa-brands fa-instagram fa-rotate-90" style="color: #AEAEAE;margin-left:1vh"></i><i class="fa-brands fa-facebook" style="color: #AEAEAE;margin-left:1vh"></i><i class="fa-solid fa-envelope" style="color:  #AEAEAE;margin-left:1vh"></i><i class="fa-solid fa-phone"style="color: #AEAEAE;margin-left:1vh"></i>
+              <a href="contact.html" style="text-decoration:none ; color:#AEAEAE ; ">contact us</a>
               </p>
             </div>
           </div>

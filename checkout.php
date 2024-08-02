@@ -3,7 +3,7 @@ session_start();
 include 'config/db_connect.php';
 
 if (!isset($_SESSION['user_id'])) {
-    // Save current cart to session
+    // Save current cart to session and redirect to login if user is not logged in
     $_SESSION['redirect_to'] = 'checkout.php?method=' . $_GET['method'];
     header("Location: login.php");
     exit();
@@ -11,50 +11,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 $method = isset($_GET['method']) ? $_GET['method'] : '';
-
-if (!empty($_SESSION['cart'])) {
-    // Save cart to database
-    foreach ($_SESSION['cart'] as $product_id => $quantity) {
-        $sql_check = "SELECT * FROM cart WHERE user_id = ? AND product_id = ?";
-        $stmt_check = $conn->prepare($sql_check);
-        $stmt_check->bind_param('ii', $user_id, $product_id);
-        $stmt_check->execute();
-        $result_check = $stmt_check->get_result();
-
-        if ($result_check->num_rows > 0) {
-            // Update existing cart item
-            $sql_update = "UPDATE cart SET quantity = quantity + ? WHERE user_id = ? AND product_id = ?";
-            $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bind_param('iii', $quantity, $user_id, $product_id);
-            $stmt_update->execute();
-        } else {
-            // Insert new cart item
-            $sql_insert = "INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)";
-            $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param('iii', $user_id, $product_id, $quantity);
-            $stmt_insert->execute();
-        }
-    }
-
-    // Clear session cart
-    unset($_SESSION['cart']);
-}
-
-if ($method === 'cash') {
-    // Handle cash on delivery logic
-    // Insert order details into database
-    // Clear cart from database
-
-    // Redirect to a success page or display a success message
-    echo "Order placed successfully! You chose cash on delivery.";
-} elseif ($method === 'credit') {
-    // Redirect to a credit card payment page
-    header("Location: credit_card_payment.php");
-    exit();
-} else {
-    header("Location: cart.php");
-    exit();
-}
 
 include 'includes/header.php';
 ?>
@@ -66,6 +22,7 @@ include 'includes/header.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Checkout</title>
 </head>
 <body>
@@ -73,6 +30,61 @@ include 'includes/header.php';
         <h1>Checkout</h1>
         <p>Processing your order...</p>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const method = "<?php echo $method; ?>";
+
+            if (method === 'cash') {
+                fetch('process_order.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ method: method })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "Order Placed Successfully!",
+                            text: data.message,
+                            icon: "success",
+                            customClass: {
+                                confirmButton: 'swal-custom-button'
+                            }
+                        }).then(() => {
+                            window.location.href = "index.php"; // Redirect to the index page
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Order Failed",
+                            text: data.message,
+                            customClass: {
+                                confirmButton: 'swal-custom-button'
+                            }
+                        }).then(() => {
+                            window.location.href = "cart.php"; // Redirect to the cart page
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Order Failed",
+                        text: "An error occurred. Please try again.",
+                        customClass: {
+                            confirmButton: 'swal-custom-button'
+                        }
+                    });
+                });
+            } else if (method === 'credit') {
+                window.location.href = 'credit_card_payment.php';
+            }
+        });
+    </script>
 </body>
 </html>
 

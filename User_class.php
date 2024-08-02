@@ -3,8 +3,6 @@ class User {
     private $conn;
     private $errors = [];
 
-
-    
     public function __construct($db) {
         $this->conn = $db;
     }
@@ -18,12 +16,27 @@ class User {
             $this->errors[] = "Invalid email format.";
         }
 
+        // Validate username
         if (strlen($username) == 0) {
             $this->errors[] = "Username is required.";
+        } elseif (!preg_match('/^[a-zA-Z\s]+$/', $username)) {
+            $this->errors[] = "Username can only contain letters and spaces.";
+        } else {
+            // Split the username by spaces
+            $words = explode(' ', $username);
+            // Filter out words that are less than 2 characters long
+            $words = array_filter($words, function($word) {
+                return strlen($word) >= 2;
+            });
+            // Check if we have at least 2 valid words
+            if (count($words) < 2) {
+                $this->errors[] = "Username must be at least 2 words, each with at least 2 letters.";
+            }
         }
 
-        if (!preg_match("/^\d{10}$/", $phone)) {
-            $this->errors[] = "Invalid phone number.";
+        // Validate phone number
+        if (!preg_match("/^07\d{8}$/", $phone)) {
+            $this->errors[] = "Invalid phone number. It must start with '07' and be exactly 10 digits.";
         }
 
         if (strlen($address) == 0) {
@@ -66,6 +79,4 @@ class User {
         }
     }
 }
-
-
 ?>

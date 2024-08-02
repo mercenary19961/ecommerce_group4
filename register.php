@@ -174,14 +174,14 @@ $conn->close();
    function validateUser() {
       var userName = document.getElementById("reg-userName").value;
       var errorDiv = document.getElementById("errorName");
-      var regex = /^(\b\w{2,}\b\s*){4}$/;
+      var regex = /^(\b\w{2,}\b\s*){2}$/;
 
       if (regex.test(userName)) {
          errorDiv.textContent = "";
          errorDiv.style.display = 'none';
          return true;
       } else {
-         errorDiv.textContent = "Please enter exactly 4 names, each word must be at least 2 letters.";
+         errorDiv.textContent = "Please enter exactly 2 names, each word must be at least 2 letters.";
          errorDiv.style.color = "red";
          errorDiv.style.display = 'block';
          return false;
