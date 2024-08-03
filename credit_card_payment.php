@@ -19,6 +19,10 @@ $result_credit = $stmt_credit->get_result();
 
 if ($result_credit->num_rows > 0) {
     $credit_card_info = $result_credit->fetch_assoc();
+} else {
+    // Redirect to credit_card-edit.php if no credit card info exists
+    header("Location: credit_card-edit.php");
+    exit();
 }
 
 include 'includes/header.php';

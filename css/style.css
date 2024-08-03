@@ -84,6 +84,12 @@ body {
   margin: 0;
 }
 
+h3{
+  line-height: 6vh !important;
+  font-family: "Jost", sans-serif !important;
+  font-weight: 100 !important;
+}
+
 p {
   font-size: 1.2em;
   color: var(--gray-color-500);

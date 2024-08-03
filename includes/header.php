@@ -2,6 +2,14 @@
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
+
+// Calculate total quantity in cart
+$total_quantity = 0;
+if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $quantity) {
+        $total_quantity += $quantity;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +23,7 @@ if (session_status() == PHP_SESSION_NONE) {
     <style>
         .card {
             width: 18rem; /* Set the width of the card */
-            height: 28rem; /* Set the height of the card */
+            height: 30rem; /* Set the height of the card */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -63,7 +71,7 @@ if (session_status() == PHP_SESSION_NONE) {
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container">
-                <a class="navbar-brand" href="index.php">Mac Store</a>
+                <a class="navbar-brand" href="index.php"><img src="images/newlogo.png" class="logo"></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -78,8 +86,8 @@ if (session_status() == PHP_SESSION_NONE) {
                         <li class="nav-item cart-indicator">
                             <a class="nav-link" href="cart.php">
                                 Cart 
-                                <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
-                                    <span class="badge bg-danger"><?php echo count($_SESSION['cart']); ?></span>
+                                <?php if ($total_quantity > 0): ?>
+                                    <span class="badge bg-danger"><?php echo $total_quantity; ?></span>
                                 <?php endif; ?>
                             </a>
                         </li>

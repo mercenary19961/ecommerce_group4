@@ -43,7 +43,10 @@ $cart_items = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 $product_details = [];
 if (!empty($cart_items)) {
     $product_ids = implode(',', array_keys($cart_items));
-    $sql = "SELECT product_id, name, price FROM products WHERE product_id IN ($product_ids)";
+    $sql = "SELECT products.product_id, products.name, products.price, discount.discount_amount 
+            FROM products 
+            LEFT JOIN discount ON products.discount_id = discount.discount_id 
+            WHERE products.product_id IN ($product_ids)";
     $result = $conn->query($sql);
 
     while ($row = $result->fetch_assoc()) {
@@ -55,7 +58,13 @@ if (!empty($cart_items)) {
 $total_cost = 0;
 foreach ($cart_items as $product_id => $quantity) {
     if (isset($product_details[$product_id])) {
-        $total_cost += $quantity * $product_details[$product_id]['price'];
+        $price = $product_details[$product_id]['price'];
+        if ($product_details[$product_id]['discount_amount']) {
+            $discounted_price = $price - ($price * ($product_details[$product_id]['discount_amount'] / 100));
+        } else {
+            $discounted_price = $price;
+        }
+        $total_cost += $quantity * $discounted_price;
     }
 }
 
@@ -93,8 +102,27 @@ include 'includes/header.php';
                             <tr>
                                 <td><?php echo htmlspecialchars($product_details[$product_id]['name']); ?></td>
                                 <td><?php echo $quantity; ?></td>
-                                <td>$<?php echo number_format($product_details[$product_id]['price'], 2); ?></td>
-                                <td>$<?php echo number_format($quantity * $product_details[$product_id]['price'], 2); ?></td>
+                                <td>
+                                    $<?php 
+                                    $price = $product_details[$product_id]['price'];
+                                    if ($product_details[$product_id]['discount_amount']) {
+                                        $discounted_price = $price - ($price * ($product_details[$product_id]['discount_amount'] / 100));
+                                        echo number_format($discounted_price, 2);
+                                    } else {
+                                        echo number_format($price, 2);
+                                    }
+                                    ?>
+                                </td>
+                                <td>
+                                    $<?php 
+                                    if ($product_details[$product_id]['discount_amount']) {
+                                        $total_price = $quantity * $discounted_price;
+                                    } else {
+                                        $total_price = $quantity * $price;
+                                    }
+                                    echo number_format($total_price, 2); 
+                                    ?>
+                                </td>
                                 <td>
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">

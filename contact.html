@@ -1,60 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/styleRegester.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <title>Contact us</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us</title>
     <style>
-        body {
-            background: url('images/login_bg.png') no-repeat center center/cover;
-            background-repeat: no-repeat;
-            background-size: cover;
-            color: hsl(0, 0%, 100%);
+        @import url("https://fonts.googleapis.com/css?family=Montserrat:400,800");
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Montserrat", sans-serif;
         }
-        .login__register {
-            justify-self: flex-end;
-            margin-top: 10px;
-            color: #f8fafc;
+        body, html {
+            height: 100%;
+            overflow: hidden;
         }
-        textarea::placeholder{
+        .picContactUs {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .contactUs {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            position: absolute;
+        }
+        .paraAboveImage {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
             color: white;
+            z-index: 1;
+        }
+        .upContactUs {
+            font-weight: bold;
+            font-size: 4vw;
+            margin-bottom: 1.5%;
+        }
+        .innerTxt {
+            font-size: 1.6vw;
+            margin-bottom: 2%;
+        }
+        .contactUsForm {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .contactUsForm input,
+        .contactUsForm textarea,
+        .contactUsForm button {
+            width: 100%;
+            margin-bottom: 2%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .contactUsForm input:focus,
+        .contactUsForm textarea:focus,
+        .contactUsForm button:focus {
+            outline: none;
+            border-color: #72AEC8;
+        }
+        .contactUsForm textarea {
+            resize: none;
+            height: 100px;
+        }
+        .contactUsForm button {
+            background-color: #72AEC8;
+            color: white;
+            cursor: pointer;
+            border: none;
+            padding: 1rem 2rem;
+            transition: background-color 0.3s ease;
+        }
+        .contactUsForm button:hover {
+            background-color: #559abb;
+        }
+        .sendHome {
+            text-decoration: none;
+            color: aqua;
+            background-color: black !important;
+            display: inline-block;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            margin-top: 1rem;
         }
     </style>
 </head>
 <body>
-<div class="login" style="height: 100vh;">
-    <form action="login.php" method="POST" class="login__form">
-        <h1 class="login__title">Contact us</h1>
-
-        <div class="login__content">
-            <div class="login__box">
-                <i class="ri-mail-line login__icon"></i>
-                <div class="login__box-input">
-                    <input type="email" name="email" class="login__input" id="login-email" placeholder=" " required>
-                    <label for="login-email" class="login__label">Name</label>
-                </div>
-            </div>
-            <div class="login__box">
-                <i class="ri-lock-2-line login__icon"></i>
-                <div class="login__box-input">
-                    <input type="password" name="password" class="login__input" id="login-pass" placeholder=" " required>
-                    <label for="login-pass" class="login__label">Email</label>
-
-                </div>
-            </div>
-            <textarea style="color: white;" name="message" class="msg" placeholder="Your Message" required></textarea><br><br>
+    <section class="picContactUs">
+        <img class="contactUs" src="images/contactt.jpg" alt="Contact Us" />
+        <div class="paraAboveImage">
+            <p class="upContactUs">Contact Us</p>
+            <p class="innerTxt">We're here to help you!</p>
+            <form action="" class="contactUsForm" onsubmit="return validateForm()">
+                <input type="text" name="name" class="fullName" placeholder="Your Name" />
+                <input type="email" name="email" class="email" placeholder="Your Email Address" />
+                <input type="text" name="subject" class="subject" placeholder="Subject" />
+                <textarea name="message" class="msg" placeholder="Your Message"></textarea>
+                <button type="submit" class="sendMsg ">Send Message</button>
+            </form>
+            <a href="index.php" class="sendHome">Home</a>
         </div>
+    </section>
+    <script>
+        function validateForm() {
+            var name = document.querySelector('.fullName').value;
+            var email = document.querySelector('.email').value;
+            var subject = document.querySelector('.subject').value;
+            var message = document.querySelector('.msg').value;
 
-        <button type="submit" class="login__button">Submit</button>
+            if (!name || !email || !subject || !message) {
+                alert("Please fill in all fields before submitting.");
+                return false;
+            }
 
-        
-    </form>
-</div>
-
-
+            return true;
+        }
+    </script>
 </body>
 </html>

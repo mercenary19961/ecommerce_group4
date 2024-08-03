@@ -11,8 +11,6 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$user = null;
-
 // Fetch user data
 $sql_user = "SELECT * FROM credit_card WHERE user_id = ?";
 $stmt_user = $conn->prepare($sql_user);
@@ -40,26 +38,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     } elseif (!preg_match("/^\d{3}$/", $cvv)) {
         $validation_error = "CVV must be 3 digits.";
     } else {
-        // Prepare and execute update statement
-        $sql_update = "UPDATE credit_card SET card_number = ?, card_holder_name = ?, expiry_date = ?, cvv = ? WHERE user_id = ?";
-        $stmt_update = $conn->prepare($sql_update);
-        $stmt_update->bind_param('ssssi', $card_number, $card_holder_name, $expiry_date, $cvv, $user_id);
-        $stmt_update->execute();
+        // Check if the user already has a credit card record
+        if ($user) {
+            // Prepare and execute update statement
+            $sql_update = "UPDATE credit_card SET card_number = ?, card_holder_name = ?, expiry_date = ?, cvv = ? WHERE user_id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param('ssssi', $card_number, $card_holder_name, $expiry_date, $cvv, $user_id);
+            $stmt_update->execute();
 
-        if ($stmt_update->affected_rows > 0) {
-            // Refresh user data after update
-            $stmt_update->close();
+            if ($stmt_update->affected_rows > 0) {
+                // Refresh user data after update
+                $stmt_update->close();
 
-            $stmt_user = $conn->prepare($sql_user);
-            $stmt_user->bind_param('i', $user_id);
-            $stmt_user->execute();
-            $result_user = $stmt_user->get_result();
-            $user = $result_user->fetch_assoc();
+                $stmt_user = $conn->prepare($sql_user);
+                $stmt_user->bind_param('i', $user_id);
+                $stmt_user->execute();
+                $result_user = $stmt_user->get_result();
+                $user = $result_user->fetch_assoc();
 
-            // Set success message
-            $success_message = "Credit card updated successfully!";
+                // Set success message
+                $success_message = "Credit card updated successfully!";
+            } else {
+                $validation_error = "Update failed. Data didn't change.";
+            }
         } else {
-            $validation_error = "Update failed. Data didn't change.";
+            // Prepare and execute insert statement
+            $sql_insert = "INSERT INTO credit_card (user_id, card_number, card_holder_name, expiry_date, cvv) VALUES (?, ?, ?, ?, ?)";
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bind_param('issss', $user_id, $card_number, $card_holder_name, $expiry_date, $cvv);
+            $stmt_insert->execute();
+
+            if ($stmt_insert->affected_rows > 0) {
+                // Refresh user data after insert
+                $stmt_insert->close();
+
+                $stmt_user = $conn->prepare($sql_user);
+                $stmt_user->bind_param('i', $user_id);
+                $stmt_user->execute();
+                $result_user = $stmt_user->get_result();
+                $user = $result_user->fetch_assoc();
+
+                // Set success message
+                $success_message = "Credit card added successfully!";
+            } else {
+                $validation_error = "Insert failed. Please try again.";
+            }
         }
     }
 }
@@ -133,6 +156,9 @@ include 'includes/header.php';
             border-radius: 5px;
             border: 1px solid #ccc;
         }
+        .proceed_btn {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -153,6 +179,9 @@ include 'includes/header.php';
                         <input type="text" name="cvv" value="<?php echo htmlspecialchars($user['cvv'] ?? ''); ?>" placeholder="CVV">
                         <button type="submit">Update</button>
                     </form>
+                    <?php if (!empty($_SESSION['cart']) && $user): ?>
+                        <a href="credit_card_payment.php" class="btn btn-primary proceed_btn">Proceed to Payment</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

@@ -1,35 +1,44 @@
 <?php
 include 'config/db_connect.php';    
 include 'includes/header.php';
+
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Array of discount percentages
+$discounts = [50, 40, 30, 20, 10];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
+    $product_id = $_POST['product_id'];
+    $quantity = 1; // Default quantity to 1
+
+    if (isset($_SESSION['cart'][$product_id])) {
+        $_SESSION['cart'][$product_id] += $quantity;
+    } else {
+        $_SESSION['cart'][$product_id] = $quantity;
+    }
+
+    header("Location: sale.php");
+    exit();
+}
 ?>
 
 <main class="container"> 
-    <br> <br> 
+    <br>
     <h1>OUR SALES</h1>
 
     <!-- Dropdown menu for selecting discount percentage -->
-    <div class="mb-4">
+    <div class="mb-1">
         <label for="discount-filter" class="form-label">Select Discount:</label>
         <select id="discount-filter" class="form-select" onchange="filterDiscount()" >
             <option value="">Select Discount</option>
-            <option value="10">10%</option>
-            <option value="20">20%</option>
-            <option value="30">30%</option>
-            <option value="40">40%</option>
-            <option value="50">50%</option>
+            <?php foreach ($discounts as $discount): ?>
+                <option value="<?php echo $discount; ?>"><?php echo $discount; ?>%</option>
+            <?php endforeach; ?>
         </select>
     </div>
-
-    <br> <br>  
-
     <?php
-    if (session_status() == PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    // Array of discount percentages
-    $discounts = [50, 40, 30, 20, 10];
-
     foreach ($discounts as $discountPercentage) {
         // Prepare SQL query
         $sql = "SELECT products.*, discount.discount_amount 
@@ -51,31 +60,31 @@ include 'includes/header.php';
             echo '<div class="row">'; 
 
             while ($row = $result->fetch_assoc()) {
-                echo '<div class="col-md-4 mb-4">'; 
-                echo '<div class="card h-100">'; 
-                echo '<div class="card-body">'; 
-                
-                echo "<div class='image-holder'>";
-                echo "<img style='width: 400px; height: 300px;' src='images/" . htmlspecialchars($row["image"]) . "' alt='product-item' class='img-fluid'>";
-                echo "</div>"; // image-holder
-                
-                echo '<h5 class="card-title">' . htmlspecialchars($row["name"]) . '</h5>';
-                
                 $oldPrice = (float) $row["price"];
                 $discountAmount = (float) $row["discount_amount"];
                 $newPrice = $oldPrice - ($oldPrice * ($discountAmount / 100));
-                
-                echo '<p class="card-text">before : ' . htmlspecialchars($oldPrice) . ' $ | after : ' . htmlspecialchars($newPrice) . ' $</p>';
-                
-                // Add to Cart button
-                echo '<form method="post" action="add_to_cart.php">';
-                echo '<input type="hidden" name="product_id" value="' . htmlspecialchars($row["product_id"]) . '">';
-                echo '<button type="submit" class="btn btn-primary">Add to Cart</button>';
-                echo '</form>';
-                
-                echo '</div>'; 
-                echo '</div>'; 
-                echo '</div>'; 
+                ?>
+                <div class="col-md-4 mb-2">
+                    <div class="card h-100">
+                        <img src="images/<?php echo htmlspecialchars($row["image"]); ?>" alt="product-item" class="card-img-top img-fluid">
+                        <div class="card-body">
+                            <h5 class="card-title"><?php echo htmlspecialchars($row["name"]); ?></h5>
+                            <p class="card-text">
+                                <span class="text-danger">$<?php echo number_format($newPrice, 2); ?></span>
+                                <span class="text-muted"><s>$<?php echo number_format($oldPrice, 2); ?></s></span>
+                            </p>
+                            <p class="card-text text-danger">Discount: <?php echo htmlspecialchars($row["discount_amount"]); ?>%</p>
+                            <div class="card_buttons">
+                                <a href="view_product.php?id=<?php echo htmlspecialchars($row["product_id"]); ?>" class="btn btn-primary">Check Product</a>
+                                <form method="post" action="sale.php" class="d-inline">
+                                    <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($row["product_id"]); ?>">
+                                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php
             }
 
             echo '</div>'; 
@@ -86,9 +95,8 @@ include 'includes/header.php';
         echo '</div>'; // discount-section
     }
 
-    $conn->close();   
+    $conn->close();
     ?>
-
 </main>
 
 <?php include 'includes/footer.php'; ?>
@@ -113,7 +121,7 @@ include 'includes/header.php';
     });
 </script>
 <style> 
-    .form-select{ 
+    .form-select { 
         width: 20%;
     }
 </style>

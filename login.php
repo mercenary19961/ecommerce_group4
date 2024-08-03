@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Redirect to the appropriate dashboard
                 if ($role_id == 1) {
-                    header("Location: admin_dashboard.php");
+                    header("Location: admin_page/dashboard.php");
                 } else {
                     header("Location: index.php");
                 }

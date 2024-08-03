@@ -4,7 +4,58 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 include 'config/db_connect.php'; 
+
+function display_products($category_id, $category_name) {
+  global $conn;
+  $sql = "SELECT product_id, image, name, price FROM products WHERE category_id = $category_id LIMIT 8";
+  $result = $conn->query($sql);
+
+  echo "<section id='{$category_name}-products' class='product-store position-relative padding-large no-padding-top'>";
+  echo "<div class='container'>";
+  echo "<div class='row'>";
+  echo "<div class='display-header d-flex justify-content-between pb-3'>";
+  echo "<h2 class='display-7 text-dark text-uppercase'>$category_name</h2>";
+  echo "<div class='btn-right'>";
+  echo "<a href='products.php' class='btn btn-medium btn-normal text-uppercase'>Go to Shop</a>";
+  echo "</div>";
+  echo "</div>";
+  echo "<div class='swiper product-swiper'>";
+  echo "<div class='swiper-wrapper'>";
+
+  if ($result->num_rows > 0) {
+      while ($row = $result->fetch_assoc()) {
+          echo "<div class='swiper-slide'>";
+          echo "<div class='product-card position-relative'>";
+          echo "<div class='image-holder'>";
+          echo "<img style='width: 400px; height: 300px;' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
+          echo "</div>";
+          echo "<div class='cart-concern position-absolute'>";
+          echo "<div class='cart-button d-flex'>";
+          echo "<button class='btn btn-medium btn-black add-to-cart' data-id='" . $row["product_id"] . "'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></button>";
+          echo "</div>";
+          echo "</div>";
+          echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
+          echo "<h3 class='card-title text-uppercase'>";
+          echo "<a href='view_product.php?id=" . $row["product_id"] . "'>" . $row["name"] . "</a>";
+          echo "</h3>";
+          echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
+          echo "</div>";
+          echo "</div>";
+          echo "</div>";
+      }
+  } else {
+      echo "No products found.";
+  }
+
+  echo "</div>";
+  echo "<div class='swiper-pagination position-absolute text-center'></div>";
+  echo "</div>";
+  echo "</div>";
+  echo "</section>";
+  echo "<hr>";
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -20,14 +71,20 @@ include 'config/db_connect.php';
     <meta name="description" content="">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    <!-- script
-    ================================================== -->
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <!-- script -->
     <script src="js/modernizr.js"></script>
+    <style>
+      h3{
+        line-height: 6vh;
+        font-family: "Jost", sans-serif;
+        font-weight: 100;
+      }
+    </style>
   </head>
   <body data-bs-spy="scroll" data-bs-target="#navbar" data-bs-root-margin="0px 0px -40%" data-bs-smooth-scroll="true" tabindex="0">
     <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -136,7 +193,7 @@ include 'config/db_connect.php';
                             <a class="nav-link me-4 active" href="#billboard">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link me-4" href="#pro">Products</a>
+                            <a class="nav-link me-4" href="#billboard">About us</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link me-4" href="sale.php">Sale</a>
@@ -171,17 +228,29 @@ include 'config/db_connect.php';
                                             </svg>
                                         </a>
                                     </li>
-                                    <?php if (isset($_SESSION['user_id'])): ?>
-                                        <li class="pe-3">
-                                            <a href="user.php" class="btnn">Profile</a>
-                                        </li>
-                                    <?php else: ?>
-                                        <li class="pe-3">
+                                    <?php $isLoggedIn =isset($_SESSION['user_id']); ?>
+                                    <li class='pe-3'>
+                                      <?php if ($isLoggedIn): ?>
+                                      <a href="cart.php" class="iconss">
+                                        <svg class="cart" >
+                                          <use xlink:href="#cart"></use>
+                                        </svg>
+                                      </a>
+                                    </li>
+                                    <li class="pe-3">
+                                      <a href="user.php" class="iconss">
+                                        <svg class="user" >
+                                          <use  xlink:href="#user"></use>
+                                        </svg>
+                                      </a>
+                                    </li>
+                                      <?php else: ?>
                                             <a href="login.php" class="btnn">Login</a>
-                                        </li>
-                                        <li>
-                                            <a href="register.php" class="btnn" id="blue-btnn">Sign up</a>
-                                        </li>
+                                          <?php  endif; ?>
+</li>
+                                    <li>
+                                    <?php if (!$isLoggedIn): ?>
+                                      <a href="register.php" class="btnn" id="blue-btnn">Sign up</a>
                                     <?php endif; ?>
                                 </ul>
                             </div>
@@ -194,9 +263,8 @@ include 'config/db_connect.php';
 </header>
 
     <section id="billboard" class="position-relative overflow-hidden bg-light-blue">
-        <!-- sliderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-      
-  rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-->
+
+        <!--About us slider-->
 
       <div class="swiper main-swiper">
         <div class="swiper-wrapper">
@@ -239,13 +307,6 @@ include 'config/db_connect.php';
             </div>
           </div>
         
-     
-         
-  
-        <!-- sliderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-         
-        
-  rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-->
 
             <div class="swiper-slide">
             <div class="container">
@@ -264,10 +325,7 @@ include 'config/db_connect.php';
               </div>
             </div>
           </div>
-        <!-- sliderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-         
-        
-  rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-->
+       
   
           <div class="swiper-slide">
             <div class="container">
@@ -289,11 +347,6 @@ include 'config/db_connect.php';
         
      
          
-  
-        <!-- sliderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-         
-        
-  rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr-->
           <div class="swiper-slide">
             <div class="container">
               <div class="row d-flex flex-wrap align-items-center">
@@ -326,8 +379,7 @@ include 'config/db_connect.php';
     </section>
 
 
-    <!-- abouuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
-    tttttttttttttttttttttttttttttt-->
+   
     <section id="aboutus" class="padding-large">
       <div class="container">
 
@@ -337,286 +389,17 @@ include 'config/db_connect.php';
       </div>
     </section>
 
+     <!-- Main product sliders-->
+    <main class="container">
+      <?php
+      display_products(1, 'Mobile');
+      display_products(2, 'iPad');
+      display_products(4, 'Mac');
+      display_products(3, 'Accessories');
+      ?>
+    </main>
 
- <!-- prooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-         ooo-->
-    <div id="pro">
-      
-       
-<!-- -------------------------- -->
-
-
-    <section id="mobile-products" class="product-store position-relative padding-large no-padding-top">
-      <div class="container">
-        <div class="row">
-          <div class="display-header d-flex justify-content-between pb-3">
-            <h2 class="display-7 text-dark text-uppercase">Mobile Products</h2>
-            <div class="btn-right">
-              <a href="products.php" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
-            </div>
-          </div>
-
-          <!-- ----------------------- -->
-
-
-      
-
-                  <!-- --------------------- -->
-                  <div class="swiper product-swiper">
-    <div class="swiper-wrapper">
-        <?php
-        $sql = "SELECT image, name, price FROM products  WHERE category_id = 1 LIMIT 4";
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                echo "<div class='swiper-slide'>";
-                echo "<div class='product-card position-relative'>";
-                
-                // عرض الصورة
-                echo "<div class='image-holder'>";
-                echo "<img style='height: 25%px; width: 20%px;' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
-                echo "</div>"; // image-holder
-
-                // زر إضافة إلى السلة
-                echo "<div class='cart-concern position-absolute'>";
-                echo "<div class='cart-button d-flex'>";
-                echo "<a href='#' class='btn btn-medium btn-black'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></a>";
-                echo "</div>"; // cart-button
-                echo "</div>"; // cart-concern
-
-                // تفاصيل المنتج
-                echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
-                echo "<h3 class='card-title text-uppercase'>";
-                echo "<a href='#'>" . $row["name"] . "</a>";
-                echo "</h3>"; // card-title
-
-                // سعر المنتج
-                echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
-                echo "</div>"; // card-detail
-
-                echo "</div>"; // product-card
-                echo "</div>"; // swiper-slide
-            }
-        } else {
-            echo "لم يتم العثور على منتجات.";
-        }
-
-        // إغلاق الاتصال
-        ?>
-    </div>
-</div>
-
-
-      </section><hr>
-
-              <!-- ----------------------------------------------- -->
-
-           
-    <!-- prooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-         ooo-->
-    <section id="ipad-products" class="product-store padding-large position-relative">
-      
-
-
-
-    <div class="container">
-        <div class="row">
-          <div class="display-header d-flex justify-content-between pb-3">
-            <h2 class="display-7 text-dark text-uppercase">ipad </h2>
-            <div class="btn-right">
-              <a href="products.php" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
-            </div>
-          </div>
-
-          <!-- ----------------------- -->
-
-
-      
-
-                  <!-- --------------------- -->
-                  <div class="swiper product-swiper">
-    <div class="swiper-wrapper">
-        <?php
-        $sql = "SELECT image, name, price FROM products  WHERE category_id = 2 LIMIT 4";
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                echo "<div class='swiper-slide'>";
-                echo "<div class='product-card position-relative'>";
-                
-                // عرض الصورة
-                echo "<div class='image-holder'>";
-                echo "<img style='  width: 400px; height: 300px;' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
-                echo "</div>"; // image-holder
-
-                // زر إضافة إلى السلة
-                echo "<div class='cart-concern position-absolute'>";
-                echo "<div class='cart-button d-flex'>";
-                echo "<a href='#' class='btn btn-medium btn-black'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></a>";
-                echo "</div>"; // cart-button
-                echo "</div>"; // cart-concern
-
-                // تفاصيل المنتج
-                echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
-                echo "<h3 class='card-title text-uppercase'>";
-                echo "<a href='#'>" . $row["name"] . "</a>";
-                echo "</h3>"; // card-title
-
-                // سعر المنتج
-                echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
-                echo "</div>"; // card-detail
-
-                echo "</div>"; // product-card
-                echo "</div>"; // swiper-slide
-            }
-        } else {
-            echo "لم يتم العثور على منتجات.";
-        }
-
-        // إغلاق الاتصال
-        ?>
-    </div>
-</div>
-      <div class="swiper-pagination position-absolute text-center"></div>
-    </section><hr>
-    <!-- prooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-         ooo-->
-    <section id="mac-products" class="product-store padding-large position-relative">
-    <div class="container">
-        <div class="row">
-          <div class="display-header d-flex justify-content-between pb-3">
-            <h2 class="display-7 text-dark text-uppercase">Mac</h2>
-            <div class="btn-right">
-              <a href="products.php" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
-            </div>
-          </div>
-
-          <!-- ----------------------- -->
-
-
-      
-
-                  <!-- --------------------- -->
-                  <div class="swiper product-swiper">
-    <div class="swiper-wrapper">
-        <?php
-        $sql = "SELECT image, name, price FROM products  WHERE category_id = 4 LIMIT 4";
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                echo "<div class='swiper-slide'>";
-                echo "<div class='product-card position-relative'>";
-                
-                // عرض الصورة
-                echo "<div class='image-holder'>";
-                echo "<img style='height: 100%; width: 100%' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
-                echo "</div>"; // image-holder
-
-                // زر إضافة إلى السلة
-                echo "<div class='cart-concern position-absolute'>";
-                echo "<div class='cart-button d-flex'>";
-                echo "<a href='#' class='btn btn-medium btn-black'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></a>";
-                echo "</div>"; // cart-button
-                echo "</div>"; // cart-concern
-
-                // تفاصيل المنتج
-                echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
-                echo "<h3 class='card-title text-uppercase'>";
-                echo "<a href='#'>" . $row["name"] . "</a>";
-                echo "</h3>"; // card-title
-
-                // سعر المنتج
-                echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
-                echo "</div>"; // card-detail
-
-                echo "</div>"; // product-card
-                echo "</div>"; // swiper-slide
-            }
-        } else {
-            echo "لم يتم العثور على منتجات.";
-        }
-
-        // إغلاق الاتصال
-        ?>
-    </div>
-</div>      <div class="swiper-pagination position-absolute text-center"></div>
-    </section><hr>
-    <!-- prooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-         ooo-->
-   
-    <section id="Accessories" class="product-store padding-large position-relative">
-    <div class="container">
-        <div class="row">
-          <div class="display-header d-flex justify-content-between pb-3">
-            <h2 class="display-7 text-dark text-uppercase">Accessories</h2>
-            <div class="btn-right">
-              <a href="products.php" class="btn btn-medium btn-normal text-uppercase">Go to Shop</a>
-            </div>
-          </div>
-
-          <!-- ----------------------- -->
-
-
-      
-
-                  <!-- --------------------- -->
-                  <div class="swiper product-swiper">
-    <div class="swiper-wrapper">
-        <?php
-        $sql = "SELECT image, name, price FROM products  WHERE category_id = 3 LIMIT 4";
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                echo "<div class='swiper-slide'>";
-                echo "<div class='product-card position-relative'>";
-                
-                // عرض الصورة
-                echo "<div class='image-holder'>";
-                echo "<img style='height: 250px; width: 250px';' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
-                echo "</div>"; // image-holder
-
-                // زر إضافة إلى السلة
-                echo "<div class='cart-concern position-absolute'>";
-                echo "<div class='cart-button d-flex'>";
-                echo "<a href='#' class='btn btn-medium btn-black'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></a>";
-                echo "</div>"; // cart-button
-                echo "</div>"; // cart-concern
-
-                // تفاصيل المنتج
-                echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
-                echo "<h3 class='card-title text-uppercase'>";
-                echo "<a href='#'>" . $row["name"] . "</a>";
-                echo "</h3>"; // card-title
-
-                // سعر المنتج
-                echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
-                echo "</div>"; // card-detail
-
-                echo "</div>"; // product-card
-                echo "</div>"; // swiper-slide
-            }
-        } else {
-            echo "لم يتم العثور على منتجات.";
-        }
-
-        // إغلاق الاتصال
-        $conn->close();
-        ?>
-    </div>
-</div>
-      <div class="swiper-pagination position-absolute text-center"></div>
-    </section>
-
-
-    <!-- saleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-
-
-    eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-         ooo-->
+    <!-- sale-->
 
   </div>
     <section id="yearly-sale" class="bg-light-blue overflow-hidden mt-5 padding-xlarge" style="background-image: url('images/single-image1.png');background-position: right; background-repeat: no-repeat;">
@@ -625,7 +408,7 @@ include 'config/db_connect.php';
           <div class="text-content offset-4 padding-medium">
             <h3>UP TO 50% off</h3>
             <h2 class="display-2 pb-5 text-uppercase text-dark">New sale</h2>
-            <a href="products.php" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Sale</a>
+            <a href="sale.php" class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Sale</a>
           </div>
         </div>
         <div class="col-md-6 col-sm-12">
@@ -633,6 +416,7 @@ include 'config/db_connect.php';
         </div>
       </div>
     </section>
+    <!-- footer-->
 
     <div id="footer-bottom">
       <div class="container1">
@@ -670,6 +454,26 @@ include 'config/db_connect.php';
     <script type="text/javascript" src="js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="js/plugins.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function() {
+          $('.add-to-cart').on('click', function() {
+              var productId = $(this).data('id');
+              $.ajax({
+                  url: 'add_to_cart.php',
+                  method: 'POST',
+                  data: { product_id: productId },
+                  dataType: 'json',
+                  success: function(response) {
+                      alert('Product added to cart. Cart count: ' + response.cartCount);
+                  },
+                  error: function() {
+                      alert('Failed to add product to cart.');
+                  }
+              });
+          });
+      });
+    </script>
   </body>
 </html>
 

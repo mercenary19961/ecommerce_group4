@@ -36,7 +36,7 @@ include 'includes/header.php';
             const method = "<?php echo $method; ?>";
 
             if (method === 'cash') {
-                fetch('process_order.php', {
+                fetch('process_cash_payment.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

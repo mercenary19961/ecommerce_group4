@@ -15,11 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         // Insert into orders table
-        $sql_order = "INSERT INTO orders (user_id, payment_method, total) VALUES (?, ?, ?)";
+        $sql_order = "INSERT INTO orders (user_id, order_date, total, payment_method) VALUES (?, NOW(), 0, 'credit')";
         $stmt_order = $conn->prepare($sql_order);
-        $total_amount = 0;
+        $stmt_order->bind_param('i', $user_id);
+        $stmt_order->execute();
 
-        // Calculate total amount
+        // Get the last inserted order id
+        $order_id = $stmt_order->insert_id;
+
+        // Insert each cart item into order_items table
+        $total_amount = 0;
         foreach ($_SESSION['cart'] as $product_id => $quantity) {
             $sql_product = "SELECT price FROM products WHERE product_id = ?";
             $stmt_product = $conn->prepare($sql_product);
@@ -27,22 +32,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt_product->execute();
             $result_product = $stmt_product->get_result();
             $product = $result_product->fetch_assoc();
-            $total_amount += $product['price'] * $quantity;
-        }
 
-        $stmt_order->bind_param('iss', $user_id, $method, $total_amount);
-        $stmt_order->execute();
+            $price = $product['price'];
+            $total_price = $price * $quantity;
+            $total_amount += $total_price;
 
-        // Get the last inserted order id
-        $order_id = $stmt_order->insert_id;
-
-        // Insert each cart item into order_items table
-        foreach ($_SESSION['cart'] as $product_id => $quantity) {
-            $sql_order_item = "INSERT INTO order_items (order_id, product_id, quantity) VALUES (?, ?, ?)";
+            $sql_order_item = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
             $stmt_order_item = $conn->prepare($sql_order_item);
-            $stmt_order_item->bind_param('iii', $order_id, $product_id, $quantity);
+            $stmt_order_item->bind_param('iiid', $order_id, $product_id, $quantity, $price);
             $stmt_order_item->execute();
         }
+
+        // Update the total amount in the orders table
+        $sql_update_total = "UPDATE orders SET total = ? WHERE order_id = ?";
+        $stmt_update_total = $conn->prepare($sql_update_total);
+        $stmt_update_total->bind_param('di', $total_amount, $order_id);
+        $stmt_update_total->execute();
 
         $conn->commit();
 

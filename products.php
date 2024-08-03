@@ -114,31 +114,39 @@ include 'includes/header.php';
     </form>
     <div class="row">
         <?php 
-        $counter = 0;
         while ($row = $result->fetch_assoc()): 
-            $position_class = '';
-            if ($counter % 3 == 1) {
-                $position_class = 'justify-content-center';
-            } elseif ($counter % 3 == 2) {
-                $position_class = 'justify-content-end';
+            $price = $row['price'];
+            if ($row['discount_amount']) {
+                $discounted_price = $price - ($price * ($row['discount_amount'] / 100));
             }
-            $counter++;
         ?>
-            <div class="col-md-4 mb-4 <?php echo $position_class; ?>">
+            <div class="col-md-4 mb-4">
                 <div class="card">
                     <img src="images/<?php echo $row['image']; ?>" class="card-img-top" alt="<?php echo $row['name']; ?>">
                     <div class="card-body">
                         <h5 class="card-title"><?php echo $row['name']; ?></h5>
-                        <p class="card-text">$<?php echo $row['price']; ?></p>
                         <?php if ($row['discount_amount']): ?>
+                            <p class="card-text">
+                                <span class="text-danger">$<?php echo number_format($discounted_price, 2); ?></span>
+                                <span class="text-muted"><s>$<?php echo number_format($price, 2); ?></s></span>
+                            </p>
                             <p class="card-text text-danger">Discount: <?php echo $row['discount_amount']; ?>%</p>
+                        <?php else: ?>
+                            <p class="card-text">$<?php echo number_format($price, 2); ?></p>
+                        <?php endif; ?>
+                        <?php if ($row['stock'] <= 0): ?>
+                            <p class="card-text text-warning">Out of Stock</p>
                         <?php endif; ?>
                         <div class="card_buttons">
-                            <a href="view_product.php?id=<?php echo $row['product_id']; ?>" class="btn btn-primary">Check Product</a>
-                            <form method="POST" action="products.php" class="d-inline">
-                                <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
-                                <button type="submit" class="btn btn-primary">Add to Cart</button>
-                            </form>
+                            <?php if ($row['stock'] > 0): ?>
+                                <a href="view_product.php?id=<?php echo $row['product_id']; ?>" class="btn btn-primary">Check Product</a>
+                                <form method="POST" action="products.php" class="d-inline">
+                                    <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
+                                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                                </form>
+                            <?php else: ?>
+                                <button class="btn btn-secondary" disabled>Out of Stock</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
