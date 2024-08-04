@@ -172,7 +172,7 @@ function display_products($category_id, $category_name) {
     <header id="header" class="site-header header-scrolled position-fixed text-black bg-light">
     <nav id="header-nav" class="navbar navbar-expand-lg px-3 mb-3">
         <div class="container-fluid">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand" href="index.php">
                 <img src="images/newlogo.png" class="logo">
             </a>
             <button class="navbar-toggler d-flex d-lg-none order-3 p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#bdNavbar" aria-controls="bdNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -378,24 +378,19 @@ function display_products($category_id, $category_name) {
       </div>
     </section>
 
-
-   
     <section id="aboutus" class="padding-large">
       <div class="container">
 
-
-        
-        
       </div>
     </section>
 
      <!-- Main product sliders-->
     <main class="container">
       <?php
-      display_products(1, 'Mobile');
-      display_products(2, 'iPad');
-      display_products(4, 'Mac');
+      display_products(1, 'Mobiles');
+      display_products(2, 'Tablets');
       display_products(3, 'Accessories');
+      display_products(4, 'Mac');
       ?>
     </main>
 

@@ -125,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
 
         <button type="submit" class="login__button">Login</button>
-        <button type="button" class="home__button" onclick="location.href='index.html'">Home</button>
+        <button type="button" class="home__button" onclick="location.href='index.php'">Home</button>
 
         <p class="login__register">
             Don't have an account? <a href="/ecommerce/ecommerce_group4/register.php" class="signup_btn">Sign Up</a>

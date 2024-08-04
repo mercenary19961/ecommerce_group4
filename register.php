@@ -114,7 +114,7 @@ $conn->close();
       </div>
 
       <button type="submit" class="login__button">Register</button>
-      <button type="button" class="home__button" onclick="location.href='index.html'">Home</button>
+      <button type="button" class="home__button" onclick="location.href='index.php'">Home</button>
 
       <p class="login__register">
          Already have an account? <a href="/ecommerce/ecommerce_group4/login.php" class="login_btn">Login</a>
