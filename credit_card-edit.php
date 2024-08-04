@@ -192,5 +192,8 @@ include 'includes/header.php';
     </div>
 </body>
 </html>
-
+<br>
+<br>
+<br>
+<br>
 <?php include 'includes/footer.php'; ?>

@@ -43,7 +43,7 @@ $cart_items = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 $product_details = [];
 if (!empty($cart_items)) {
     $product_ids = implode(',', array_keys($cart_items));
-    $sql = "SELECT products.product_id, products.name, products.price, discount.discount_amount 
+    $sql = "SELECT products.product_id, products.name, products.description, products.price, discount.discount_amount 
             FROM products 
             LEFT JOIN discount ON products.discount_id = discount.discount_id 
             WHERE products.product_id IN ($product_ids)";
@@ -79,6 +79,28 @@ include 'includes/header.php';
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
     <title>Cart</title>
+    <style>
+        .btn-custom {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .button-group .right-align {
+            margin-left: auto;
+        }
+        .actions-column {
+            text-align: right;
+        }
+    </style>
 </head>
 <body>
     <main class="container">
@@ -90,10 +112,11 @@ include 'includes/header.php';
                 <thead>
                     <tr>
                         <th>Product</th>
+                        <th>Description</th>
                         <th>Quantity</th>
                         <th>Price</th>
                         <th>Total</th>
-                        <th>Actions</th>
+                        <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -101,6 +124,7 @@ include 'includes/header.php';
                         <?php if (isset($product_details[$product_id])): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($product_details[$product_id]['name']); ?></td>
+                                <td><?php echo htmlspecialchars($product_details[$product_id]['description']); ?></td>
                                 <td><?php echo $quantity; ?></td>
                                 <td>
                                     $<?php 
@@ -123,36 +147,41 @@ include 'includes/header.php';
                                     echo number_format($total_price, 2); 
                                     ?>
                                 </td>
-                                <td>
+                                <td class="actions-column">
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                                         <input type="hidden" name="action" value="add">
-                                        <button type="submit" class="btn btn-success btn-sm">+</button>
+                                        <button type="submit" class="btn btn-custom btn-sm">+</button>
                                     </form>
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                                         <input type="hidden" name="action" value="remove">
-                                        <button type="submit" class="btn btn-warning btn-sm">-</button>
+                                        <button type="submit" class="btn btn-custom btn-sm">-</button>
                                     </form>
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                                         <input type="hidden" name="action" value="delete">
-                                        <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        <button type="submit" class="btn btn-custom btn-sm">Remove</button>
                                     </form>
                                 </td>
                             </tr>
                         <?php endif; ?>
                     <?php endforeach; ?>
                     <tr>
-                        <td colspan="3" class="text-right"><strong>Total Cost:</strong></td>
+                        <td colspan="4" class="text-right"><strong>Total Cost:</strong></td>
                         <td><strong>$<?php echo number_format($total_cost, 2); ?></strong></td>
                         <td></td>
                     </tr>
                 </tbody>
             </table>
-            <div class="text-right">
-                <a href="checkout.php?method=cash" class="btn btn-primary">Pay in Cash</a>
-                <a href="credit_card_payment.php" class="btn btn-secondary">Pay with Credit</a>
+            <div class="button-group">
+                <div>
+                    <a href="checkout.php?method=cash" class="btn btn-primary">Pay in Cash</a>
+                    <a href="credit_card_payment.php" class="btn btn-secondary">Pay with Credit</a>
+                </div>
+                <div class="right-align">
+                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                </div>
             </div>
         <?php endif; ?>
     </main>
