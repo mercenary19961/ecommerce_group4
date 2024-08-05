@@ -98,7 +98,6 @@ include 'includes/header.php';
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            
         }
         .update-form input {
             margin-bottom: 10px;
@@ -107,15 +106,17 @@ include 'includes/header.php';
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .update-form button {
+        .update-form button, .update-form a {
             padding: 10px 20px;
+            margin-right: 10px;
             background-color: #007bff;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            text-decoration: none;
         }
-        .update-form button:hover {
+        .update-form button:hover, .update-form a:hover {
             background-color: #0056b3;
         }
         .error-message, .success-message {
@@ -134,6 +135,9 @@ include 'includes/header.php';
             max-width: 150px;
             border-radius: 5px;
             border: 1px solid #ccc;
+        }
+        .back_btn {
+            background-color: #6c757d !important;
         }
     </style>
 </head>
@@ -154,6 +158,7 @@ include 'includes/header.php';
                         <input type="text" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" placeholder="Phone" required>
                         <input type="text" name="address" value="<?php echo htmlspecialchars($user['address']); ?>" placeholder="Address">
                         <button type="submit">Update</button>
+                        <a href="user.php" class="back_btn">Back</a>
                     </form>
                 </div>
             </div>
@@ -165,9 +170,5 @@ include 'includes/header.php';
     </div>
 </body>
 </html>
-<br>
-<br>
-<br>
-<br>
-
+<br><br><br><br><br>
 <?php include 'includes/footer.php'; ?>

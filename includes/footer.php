@@ -42,11 +42,14 @@
         .copyright a:hover {
             text-decoration: underline;
         }
+        .payment-method {
+            width: 500px;
+        }
 </style>
 <div id="footer-bottom">
         <div class="container1">
             <div class="row d-flex flex-wrap justify-content-between">
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-4">
                     <div class="Shipping d-flex">
                         <p>We ship with:</p>
                         <div class="card-wrap ps-2">
@@ -54,7 +57,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-4">
                     <div class="payment-method d-flex">
                         <p>Payment options:</p>
                         <div class="card-wrap ps-2">
@@ -64,7 +67,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-4">
                     <div class="copyright">
                         <p>© Copyright 2024 MacStore. 
                         <a href="contact.html">Contact Us</a></p>

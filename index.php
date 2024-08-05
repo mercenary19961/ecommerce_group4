@@ -233,10 +233,10 @@ function display_products($category_id, $category_name) {
                                 <a class="nav-link me-4 active" href="#billboard">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link me-4" href="#billboard">About us</a>
+                                <a class="nav-link me-4" href="products.php">Products</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link me-4" href="sale.php">Sale</a>
+                                <a class="nav-link me-4" href="sale.php">Sales</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link me-4" href="contact.html">Contact us</a>
@@ -262,13 +262,6 @@ function display_products($category_id, $category_name) {
                             <li class="nav-item">
                                 <div class="user-items ps-5">
                                     <ul class="d-flex justify-content-end list-unstyled">
-                                        <li class="search-item pe-3">
-                                            <a href="products.php" class="search-button">
-                                                <svg class="search">
-                                                    <use xlink:href="#search"></use>
-                                                </svg>
-                                            </a>
-                                        </li>
                                         <?php $isLoggedIn =isset($_SESSION['user_id']); ?>
                                         <li class='pe-3'>
                                             <?php if ($isLoggedIn): ?>
@@ -278,7 +271,7 @@ function display_products($category_id, $category_name) {
                                                     <?php 
                                                     if (session_status() == PHP_SESSION_NONE) {
                                                       session_start();
-                                                  }
+                                                    }
                                                     if ($total_quantity > 0): ?>
                                                     <span class="badge bg-danger"><?php echo $total_quantity; ?></span>
                                                     <?php endif; ?>
@@ -333,7 +326,7 @@ function display_products($category_id, $category_name) {
                             </div>
                             <div class="col-md-5">
                                 <div class="image-holder">
-                                    <img src="images/ele.shop.png" alt="banner" style="position: relative; top: 18vh; ">
+                                    <img src="images/apple.png" alt="banner" style="position: relative; top: 18vh; ">
 
                                 </div>
                             </div>
@@ -485,7 +478,7 @@ function display_products($category_id, $category_name) {
     <div id="footer-bottom">
         <div class="container1">
             <div class="row d-flex flex-wrap justify-content-between">
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-4">
                     <div class="Shipping d-flex">
                         <p>We ship with:</p>
                         <div class="card-wrap ps-2">
@@ -493,17 +486,17 @@ function display_products($category_id, $category_name) {
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-4">
                     <div class="payment-method d-flex">
                         <p>Payment options:</p>
-                        <div class="card-wrap ps-2">
+                        <div class="payment-method card-wrap ps-2">
                             <img src="images/visa.jpg" alt="visa">
                             <img src="images/mastercard.jpg" alt="mastercard">
                             <img src="images/paypal.jpg" alt="paypal">
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6">
+                <div class="col-md-4 col-sm-4">
                     <div class="copyright" style="line-hight:3px" style="color:#717171">
                         <p>©Copyright2024MacStore.
                             <a href="contact.html" style="text-decoration:none ; color:#AEAEAE ; ">contact us</a>

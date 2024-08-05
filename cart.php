@@ -4,16 +4,28 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 include 'config/db_connect.php';
 
-// Handle add, remove, and delete actions
+// Handle add, remove, delete actions, and coupon application
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
 
     if ($product_id > 0) {
         if (isset($_POST['action'])) {
+            $sql = "SELECT stock FROM products WHERE product_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param('i', $product_id);
+            $stmt->execute();
+            $stmt->bind_result($stock);
+            $stmt->fetch();
+            $stmt->close();
+
             switch ($_POST['action']) {
                 case 'add':
                     if (isset($_SESSION['cart'][$product_id])) {
-                        $_SESSION['cart'][$product_id]++;
+                        if ($_SESSION['cart'][$product_id] < $stock) {
+                            $_SESSION['cart'][$product_id]++;
+                        } else {
+                            $_SESSION['error'] = "Not enough stock for this product.";
+                        }
                     } else {
                         $_SESSION['cart'][$product_id] = 1;
                     }
@@ -34,6 +46,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+
+    if (isset($_POST['coupon_code'])) {
+        $coupon_code = htmlspecialchars(trim($_POST['coupon_code']));
+
+        $stmt = $conn->prepare("SELECT discount.discount_amount FROM coupons 
+                                JOIN discount ON coupons.discount_id = discount.discount_id 
+                                WHERE coupons.code = ? AND coupons.expiry_date >= CURDATE()");
+        $stmt->bind_param('s', $coupon_code);
+        $stmt->execute();
+        $stmt->bind_result($coupon_discount);
+        if ($stmt->fetch()) {
+            $_SESSION['coupon_discount'] = $coupon_discount;
+            $_SESSION['coupon_code'] = $coupon_code;
+        } else {
+            $_SESSION['coupon_error'] = "Invalid or expired coupon code.";
+        }
+        $stmt->close();
+    }
+
+    if (isset($_POST['remove_coupon'])) {
+        unset($_SESSION['coupon_discount']);
+        unset($_SESSION['coupon_code']);
+    }
 }
 
 // Fetch cart items from the session
@@ -43,7 +78,7 @@ $cart_items = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 $product_details = [];
 if (!empty($cart_items)) {
     $product_ids = implode(',', array_keys($cart_items));
-    $sql = "SELECT products.product_id, products.name, products.description, products.price, discount.discount_amount 
+    $sql = "SELECT products.product_id, products.name, products.description, products.price, products.stock, discount.discount_amount 
             FROM products 
             LEFT JOIN discount ON products.discount_id = discount.discount_id 
             WHERE products.product_id IN ($product_ids)";
@@ -67,6 +102,10 @@ foreach ($cart_items as $product_id => $quantity) {
         $total_cost += $quantity * $discounted_price;
     }
 }
+
+// Apply coupon discount
+$coupon_discount = isset($_SESSION['coupon_discount']) ? $_SESSION['coupon_discount'] : 0;
+$total_cost_after_coupon = $total_cost - ($total_cost * ($coupon_discount / 100));
 
 include 'includes/header.php';
 ?>
@@ -100,11 +139,24 @@ include 'includes/header.php';
         .actions-column {
             text-align: right;
         }
+        .coupon_form {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .coupon-input {
+            width: 20%;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
     <main class="container">
         <h1>Cart</h1>
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger">
+                <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
+            </div>
+        <?php endif; ?>
         <?php if (empty($cart_items)): ?>
             <p>Your cart is empty.</p>
         <?php else: ?>
@@ -114,7 +166,8 @@ include 'includes/header.php';
                         <th>Product</th>
                         <th>Description</th>
                         <th>Quantity</th>
-                        <th>Price</th>
+                        <th>Price Before Discount</th>
+                        <th>Discounted Price</th>
                         <th>Total</th>
                         <th class="actions-column">Actions</th>
                     </tr>
@@ -126,6 +179,7 @@ include 'includes/header.php';
                                 <td><?php echo htmlspecialchars($product_details[$product_id]['name']); ?></td>
                                 <td><?php echo htmlspecialchars($product_details[$product_id]['description']); ?></td>
                                 <td><?php echo $quantity; ?></td>
+                                <td>$<?php echo number_format($product_details[$product_id]['price'], 2); ?></td>
                                 <td>
                                     $<?php 
                                     $price = $product_details[$product_id]['price'];
@@ -168,10 +222,22 @@ include 'includes/header.php';
                         <?php endif; ?>
                     <?php endforeach; ?>
                     <tr>
-                        <td colspan="4" class="text-right"><strong>Total Cost:</strong></td>
+                        <td colspan="5" class="text-right"><strong>Total Cost:</strong></td>
                         <td><strong>$<?php echo number_format($total_cost, 2); ?></strong></td>
                         <td></td>
                     </tr>
+                    <?php if ($coupon_discount > 0): ?>
+                        <tr>
+                            <td colspan="5" class="text-right"><strong>Discount (<?php echo $coupon_discount; ?>%):</strong></td>
+                            <td><strong>-$<?php echo number_format($total_cost * ($coupon_discount / 100), 2); ?></strong></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-right"><strong>Total After Discount:</strong></td>
+                            <td><strong>$<?php echo number_format($total_cost_after_coupon, 2); ?></strong></td>
+                            <td></td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
             <div class="button-group">
@@ -183,6 +249,18 @@ include 'includes/header.php';
                     <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
                 </div>
             </div>
+            <form method="post" action="cart.php" class="coupon_form">
+                <div class="form-group">
+                    <label for="coupon_code">Apply Coupon:</label>
+                    <input type="text" name="coupon_code" id="coupon_code" class="form-control coupon-input" placeholder="Enter coupon code">
+                </div>
+                <button type="submit" class="btn btn-primary">Apply Coupon</button>
+                <button type="submit" name="remove_coupon" class="btn btn-secondary">Remove Coupon</button>
+                <?php if (isset($_SESSION['coupon_error'])): ?>
+                    <p style="color: red;"><?php echo $_SESSION['coupon_error']; ?></p>
+                    <?php unset($_SESSION['coupon_error']); ?>
+                <?php endif; ?>
+            </form>
         <?php endif; ?>
     </main>
 </body>

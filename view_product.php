@@ -110,13 +110,26 @@ include 'includes/header.php';
             font-size: 0.85rem;
         }
         .add-comment {
-            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container product-details">
-        <h1><?php echo htmlspecialchars($product['name']); ?></h1>
+        <div class="button-group">
+            <h1><?php echo htmlspecialchars($product['name']); ?></h1>
+            <form method="post" action="cart.php">
+                <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
+                <input type="hidden" name="action" value="add">
+                <button type="submit" class="btn btn-primary">Add to Cart</button>
+            </form>
+        </div>
         <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
         <p><strong>Price:</strong> $<?php echo number_format($product['price'], 2); ?></p>
         <p><?php echo htmlspecialchars($product['description']); ?></p>
@@ -124,17 +137,10 @@ include 'includes/header.php';
         <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['stock']); ?></p>
 
         <div class="comments-section">
-            <h2>Comments</h2>
-            <?php while ($comment = $result_comments->fetch_assoc()): ?>
-                <div class="comment">
-                    <div class="comment-meta">
-                        <p class="comment-meta-username"><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong></p>
-                        <p class="comment-date"><?php echo htmlspecialchars($comment['created_at']); ?></p>
-                    </div>
-                    <p class="comment-color"><?php echo htmlspecialchars($comment['comment']); ?></p>
-                </div>
-            <?php endwhile; ?>
-
+            <div class="button-group">
+                <h2>Comments</h2>
+                <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+            </div>
             <?php if (isset($_SESSION['user_id'])): ?>
                 <form method="post" class="add-comment">
                     <div class="form-group">
@@ -146,6 +152,16 @@ include 'includes/header.php';
             <?php else: ?>
                 <p><a href="login.php">Log in</a> to add a comment.</p>
             <?php endif; ?>
+
+            <?php while ($comment = $result_comments->fetch_assoc()): ?>
+                <div class="comment">
+                    <div class="comment-meta">
+                        <p class="comment-meta-username"><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong></p>
+                        <p class="comment-date"><?php echo htmlspecialchars($comment['created_at']); ?></p>
+                    </div>
+                    <p class="comment-color"><?php echo htmlspecialchars($comment['comment']); ?></p>
+                </div>
+            <?php endwhile; ?>
         </div>
     </div>
 </body>

@@ -71,11 +71,18 @@ include 'includes/header.php';
             </div>
             <div class="col-md-3">
                 <label for="price_min">Price (Min)</label>
-                <input type="number" name="price_min" id="price_min" class="form-control" value="<?php echo $price_min; ?>">
+                <input type="number" name="price_min" id="price_min" class="form-control" value="<?php echo $price_min; ?>" step="100">
             </div>
             <div class="col-md-3">
-                <label for="price_max">Price (Max)</label>
-                <input type="number" name="price_max" id="price_max" class="form-control" value="<?php echo $price_max; ?>">
+                <label for="discount">Discount</label>
+                <select name="discount" id="discount" class="form-control">
+                    <option value="All" <?php echo ($discount == 'All') ? 'selected' : ''; ?>>All</option>
+                    <option value="10" <?php echo ($discount == '10') ? 'selected' : ''; ?>>10%</option>
+                    <option value="20" <?php echo ($discount == '20') ? 'selected' : ''; ?>>20%</option>
+                    <option value="30" <?php echo ($discount == '30') ? 'selected' : ''; ?>>30%</option>
+                    <option value="40" <?php echo ($discount == '40') ? 'selected' : ''; ?>>40%</option>
+                    <option value="50" <?php echo ($discount == '50') ? 'selected' : ''; ?>>50%</option>
+                </select>
             </div>
             <div class="col-md-3">
                 <label for="in_stock">In Stock</label>
@@ -91,24 +98,18 @@ include 'includes/header.php';
                 <input type="text" name="search_term" id="search_term" class="form-control" value="<?php echo htmlspecialchars($search_term); ?>">
             </div>
             <div class="col-md-3">
-                <label for="discount">Discount</label>
-                <select name="discount" id="discount" class="form-control">
-                    <option value="All" <?php echo ($discount == 'All') ? 'selected' : ''; ?>>All</option>
-                    <option value="10" <?php echo ($discount == '10') ? 'selected' : ''; ?>>10%</option>
-                    <option value="20" <?php echo ($discount == '20') ? 'selected' : ''; ?>>20%</option>
-                    <option value="30" <?php echo ($discount == '30') ? 'selected' : ''; ?>>30%</option>
-                    <option value="40" <?php echo ($discount == '40') ? 'selected' : ''; ?>>40%</option>
-                    <option value="50" <?php echo ($discount == '50') ? 'selected' : ''; ?>>50%</option>
-                </select>
+                <label for="price_max">Price (Max)</label>
+                <input type="number" name="price_max" id="price_max" class="form-control" value="<?php echo $price_max; ?>" step="100">
             </div>
-        </div>
-        <div class="row mt-3">
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="products.php" class="btn btn-secondary">Clear Filter</a>
-            </div>
-            <div class="col-md-9">
-                <p class="text-right">Found <?php echo $result_count; ?> results</p>
+            <div class="col-md-6 d-flex align-items-end justify-content-between">
+                <div class="d-flex">
+                    <button type="submit" class="btn btn-primary" style="margin-right: 20px !important;">Filter</button>
+                    <a href="products.php" class="btn btn-secondary" style="margin-right: 20px !important;">Clear Filter</a>
+                    <p class="ml-2 mb-0 align-self-end">Found <?php echo $result_count; ?> results</p>
+                </div>
+                <div class="ml-auto">
+                    <a href="cart.php" class="btn btn-warning">Cart</a>
+                </div>
             </div>
         </div>
     </form>
