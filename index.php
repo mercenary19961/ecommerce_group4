@@ -236,7 +236,7 @@ function display_products($category_id, $category_name) {
                                 <a class="nav-link me-4" href="products.php">Products</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link me-4" href="sale.php">Sales</a>
+                                <a class="nav-link me-4" href="sale.php">Offers</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link me-4" href="contact.html">Contact us</a>

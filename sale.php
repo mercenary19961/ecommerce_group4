@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 
 <main class="container"> 
     <br>
-    <h1>OUR SALES</h1>
+    <h1>Our Offers</h1>
 
     <!-- Dropdown menu for selecting discount percentage -->
     <div class="mb-1">

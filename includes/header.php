@@ -57,13 +57,18 @@ if (isset($_SESSION['cart'])) {
 
         .cart-indicator .badge {
             position: absolute;
-            top: -5px;
+            top: -0.1px;
             right: -5px;
         }
-        
+
         .card_buttons {
             display: flex;
             justify-content: space-around;
+        }
+
+        .nav-link svg {
+            vertical-align: middle;
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -78,20 +83,22 @@ if (isset($_SESSION['cart'])) {
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="index.php">Home</a>
+                            <a class="nav-link mt-2" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="products.php">Products</a>
+                            <a class="nav-link mt-2" href="products.php">Products</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="sale.php">Sales</a>
+                            <a class="nav-link mt-2" href="sale.php">Offers</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="contact.html">Contact</a>
+                            <a class="nav-link me-3 mt-2" href="contact.html">Contact us</a>
                         </li>
                         <li class="nav-item cart-indicator">
-                            <a class="nav-link" href="cart.php">
-                                Cart 
+                            <a class="nav-link mt-2" href="cart.php">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                            </svg>
                                 <?php if ($total_quantity > 0): ?>
                                     <span class="badge bg-danger"><?php echo $total_quantity; ?></span>
                                 <?php endif; ?>
@@ -99,7 +106,11 @@ if (isset($_SESSION['cart'])) {
                         </li>
                         <?php if (isset($_SESSION['user_id'])): ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="user.php">Profile</a>
+                                <a class="nav-link mt-2" href="user.php">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8 9a5 5 0 0 0-4.546 2.916A7.498 7.498 0 0 0 8 16a7.5 7.5 0 0 0 4.546-4.084A5 5 0 0 0 8 9z"/>
+                                    </svg>
+                                </a>
                             </li>
                         <?php else: ?>
                             <li class="nav-item">
@@ -111,6 +122,5 @@ if (isset($_SESSION['cart'])) {
             </div>
         </nav>
     </header>
-
 </body>
 </html>

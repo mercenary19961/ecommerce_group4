@@ -132,14 +132,14 @@ include 'includes/header.php';
         </div>
         <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
         <p><strong>Price:</strong> $<?php echo number_format($product['price'], 2); ?></p>
-        <p><?php echo htmlspecialchars($product['description']); ?></p>
+        <p><strong>Name:</strong> <?php echo htmlspecialchars($product['description']); ?></p>
         <p><strong>Category:</strong> <?php echo htmlspecialchars($product['category_name']); ?></p>
         <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['stock']); ?></p>
+        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
 
         <div class="comments-section">
             <div class="button-group">
                 <h2>Comments</h2>
-                <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
             </div>
             <?php if (isset($_SESSION['user_id'])): ?>
                 <form method="post" class="add-comment">

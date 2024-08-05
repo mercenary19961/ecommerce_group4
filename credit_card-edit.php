@@ -159,6 +159,13 @@ include 'includes/header.php';
         .proceed_btn {
             margin-top: 10px;
         }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .back{
+            width: 74px;
+        }
     </style>
 </head>
 <body>
@@ -177,7 +184,10 @@ include 'includes/header.php';
                         <input type="text" name="card_holder_name" value="<?php echo htmlspecialchars($user['card_holder_name'] ?? ''); ?>" placeholder="Card Holder Name" required>
                         <input type="text" name="expiry_date" value="<?php echo htmlspecialchars($user['expiry_date'] ?? ''); ?>" placeholder="Expiry Date (YYYY-MM-DD)" required>
                         <input type="text" name="cvv" value="<?php echo htmlspecialchars($user['cvv'] ?? ''); ?>" placeholder="CVV">
-                        <button type="submit">Update</button>
+                        <div class="button-group">
+                            <button type="submit">Update</button>
+                            <a href="javascript:history.back()" class="btn btn-secondary back">Back</a>
+                        </div>
                     </form>
                     <?php if (!empty($_SESSION['cart']) && $user): ?>
                         <a href="credit_card_payment.php" class="btn btn-primary proceed_btn">Proceed to Payment</a>
@@ -192,5 +202,6 @@ include 'includes/header.php';
     </div>
 </body>
 </html>
+
 <br><br><br>
 <?php include 'includes/footer.php'; ?>

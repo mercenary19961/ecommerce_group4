@@ -60,14 +60,8 @@ include 'includes/header.php';
     <form method="GET" action="products.php" class="mb-4">
         <div class="row">
             <div class="col-md-3">
-                <label for="category">Category</label>
-                <select name="category" id="category" class="form-control">
-                    <option value="All" <?php echo ($category == 'All') ? 'selected' : ''; ?>>All</option>
-                    <option value="Phones" <?php echo ($category == 'Phones') ? 'selected' : ''; ?>>Phones</option>
-                    <option value="Tablets" <?php echo ($category == 'Tablets') ? 'selected' : ''; ?>>Tablets</option>
-                    <option value="Accessories" <?php echo ($category == 'Accessories') ? 'selected' : ''; ?>>Accessories</option>
-                    <option value="Mac" <?php echo ($category == 'Mac') ? 'selected' : ''; ?>>Mac</option>
-                </select>
+                <label for="search_term">Search</label>
+                <input type="text" name="search_term" id="search_term" placeholder="Type letters to search" class="form-control" value="<?php echo htmlspecialchars($search_term); ?>">
             </div>
             <div class="col-md-3">
                 <label for="price_min">Price (Min)</label>
@@ -92,10 +86,16 @@ include 'includes/header.php';
                 </select>
             </div>
         </div>
-        <div class="row mt-3">
+        <div class="row mt-3">  
             <div class="col-md-3">
-                <label for="search_term">Search</label>
-                <input type="text" name="search_term" id="search_term" class="form-control" value="<?php echo htmlspecialchars($search_term); ?>">
+                <label for="category">Category</label>
+                <select name="category" id="category" class="form-control">
+                    <option value="All" <?php echo ($category == 'All') ? 'selected' : ''; ?>>All</option>
+                    <option value="Phones" <?php echo ($category == 'Phones') ? 'selected' : ''; ?>>Phones</option>
+                    <option value="Tablets" <?php echo ($category == 'Tablets') ? 'selected' : ''; ?>>Tablets</option>
+                    <option value="Accessories" <?php echo ($category == 'Accessories') ? 'selected' : ''; ?>>Accessories</option>
+                    <option value="Mac" <?php echo ($category == 'Mac') ? 'selected' : ''; ?>>Mac</option>
+                </select>
             </div>
             <div class="col-md-3">
                 <label for="price_max">Price (Max)</label>
