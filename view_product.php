@@ -46,30 +46,22 @@ include 'includes/header.php';
     <link rel="stylesheet" href="css/style.css">
     <title><?php echo htmlspecialchars($product['name']); ?></title>
     <style>
-        .product-details {
-            max-width: 800px;
+        .product-details-container {
+            max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
+        }
+        .product-image img {
+            max-width: 100%;
+            height: auto;
             border: 1px solid #ddd;
             border-radius: 5px;
             background-color: #f9f9f9;
         }
-        .product-details img {
-            max-width: 100%;
-            height: auto;
-            margin-bottom: 20px;
-        }
-        .product-details h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        .product-details p {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            color: #4b5563;
+        .product-details {
+            padding-left: 20px;
         }
         .comments-section {
-            margin-top: 40px;
             background-color: #eef2f3;
             padding: 20px;
             border: 1px solid #ccc;
@@ -121,47 +113,53 @@ include 'includes/header.php';
     </style>
 </head>
 <body>
-    <div class="container product-details">
-        <div class="button-group">
-            <h1><?php echo htmlspecialchars($product['name']); ?></h1>
-            <form method="post" action="cart.php">
-                <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-                <input type="hidden" name="action" value="add">
-                <button type="submit" class="btn btn-primary">Add to Cart</button>
-            </form>
-        </div>
-        <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
-        <p><strong>Price:</strong> $<?php echo number_format($product['price'], 2); ?></p>
-        <p><strong>Name:</strong> <?php echo htmlspecialchars($product['description']); ?></p>
-        <p><strong>Category:</strong> <?php echo htmlspecialchars($product['category_name']); ?></p>
-        <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['stock']); ?></p>
-        <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
-
-        <div class="comments-section">
-            <div class="button-group">
-                <h2>Comments</h2>
+    <div class="container product-details-container">
+        <div class="row">
+            <div class="col-md-6 product-image">
+                <img src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
             </div>
-            <?php if (isset($_SESSION['user_id'])): ?>
-                <form method="post" class="add-comment">
-                    <div class="form-group">
-                        <label for="comment">Add a comment:</label>
-                        <textarea name="comment" id="comment" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-2">Submit</button>
-                </form>
-            <?php else: ?>
-                <p><a href="login.php">Log in</a> to add a comment.</p>
-            <?php endif; ?>
-
-            <?php while ($comment = $result_comments->fetch_assoc()): ?>
-                <div class="comment">
-                    <div class="comment-meta">
-                        <p class="comment-meta-username"><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong></p>
-                        <p class="comment-date"><?php echo htmlspecialchars($comment['created_at']); ?></p>
-                    </div>
-                    <p class="comment-color"><?php echo htmlspecialchars($comment['comment']); ?></p>
+            <div class="col-md-6 product-details">
+                <div class="button-group">
+                    <h1><?php echo htmlspecialchars($product['name']); ?></h1>
+                    <form method="post" action="cart.php">
+                        <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
+                        <input type="hidden" name="action" value="add">
+                        <button type="submit" class="btn btn-primary">Add to Cart</button>
+                    </form>
                 </div>
-            <?php endwhile; ?>
+                <p><strong>Price:</strong> $<?php echo number_format($product['price'], 2); ?></p>
+                <p><strong>Name:</strong> <?php echo htmlspecialchars($product['description']); ?></p>
+                <p><strong>Category:</strong> <?php echo htmlspecialchars($product['category_name']); ?></p>
+                <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['stock']); ?></p>
+                <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-12 comments-section">
+                <h2>Comments</h2>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <form method="post" class="add-comment">
+                        <div class="form-group">
+                            <label for="comment">Add a comment:</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+                    </form>
+                <?php else: ?>
+                    <p><a href="login.php">Log in</a> to add a comment.</p>
+                <?php endif; ?>
+
+                <?php while ($comment = $result_comments->fetch_assoc()): ?>
+                    <div class="comment">
+                        <div class="comment-meta">
+                            <p class="comment-meta-username"><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong></p>
+                            <p class="comment-date"><?php echo htmlspecialchars($comment['created_at']); ?></p>
+                        </div>
+                        <p class="comment-color"><?php echo htmlspecialchars($comment['comment']); ?></p>
+                    </div>
+                <?php endwhile; ?>
+            </div>
         </div>
     </div>
 </body>

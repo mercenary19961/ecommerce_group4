@@ -106,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             window.location.href = 'users.php'; // Redirect to the users page
                         });
                     </script>";
+                    header('location:users.php');
                 } else {
                     echo "<script>
                         Swal.fire({
@@ -140,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -147,105 +149,116 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="css/styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #263043; /* Dark background */
-            color: #1d2634;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #263043;
+        /* Dark background */
+        color: #1d2634;
+        margin: 0;
+        padding: 0;
+    }
 
-        .form-container {
-            width: 90%;
-            max-width: 600px;
-            margin: 50px auto;
-            background: #1d2634; /* Form background */
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    .form-container {
+        width: 90%;
+        max-width: 600px;
+        margin: 50px auto;
+        background: #1d2634;
+        /* Form background */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        .form h2 {
-            margin-bottom: 20px;
-            color: #e6e8ed; /* Light text color */
-            text-align: center;
-        }
+    .form h2 {
+        margin-bottom: 20px;
+        color: #e6e8ed;
+        /* Light text color */
+        text-align: center;
+    }
 
-        .input-container {
-            margin-bottom: 20px;
-            position: relative;
-        }
+    .input-container {
+        margin-bottom: 20px;
+        position: relative;
+    }
 
-        .input-container input,
-        .input-container textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-            background: #1d2634; /* Input background */
-            color: #e6e8ed;
-            margin-top: 10px;
-        }
+    .input-container input,
+    .input-container textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 16px;
+        background: #1d2634;
+        /* Input background */
+        color: #e6e8ed;
+        margin-top: 10px;
+    }
 
-        .input-container label {
-            position: absolute;
-            top: 10px;
-            left: 12px;
-            font-size: 14px;
-            color: #e6e8ed;
-            transition: 0.2s ease;
-            pointer-events: none;
-        }
+    .input-container label {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-size: 14px;
+        color: #e6e8ed;
+        transition: 0.2s ease;
+        pointer-events: none;
+    }
 
-        .input-container input:focus+label,
-        .input-container textarea:focus+label,
-        .input-container input:not(:placeholder-shown)+label,
-        .input-container textarea:not(:placeholder-shown)+label {
-            top: -10px;
-            left: 8px;
-            font-size: 15px;
-            color: #e6e8ed;
-        }
+    .input-container input:focus+label,
+    .input-container textarea:focus+label,
+    .input-container input:not(:placeholder-shown)+label,
+    .input-container textarea:not(:placeholder-shown)+label {
+        top: -10px;
+        left: 8px;
+        font-size: 15px;
+        color: #e6e8ed;
+    }
 
-        .button {
-            display: inline-block;
-            background-color: #ff6f61; /* Button color */
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.3s ease;
-            text-decoration: none;
-            margin: 5px;
-        }
+    .button {
+        display: inline-block;
+        background-color: #ff6f61;
+        /* Button color */
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-align: center;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+        margin: 5px;
+    }
 
-        .button:hover {
-            background-color: #e55d50; /* Button hover color */
-        }
+    .button:hover {
+        background-color: #e55d50;
+        /* Button hover color */
+    }
 
-        .button.update {
-            background-color: #4caf50; /* Green for update button */
-        }
+    .button.update {
+        background-color: #4caf50;
+        /* Green for update button */
+    }
 
-        .button.update:hover {
-            background-color: #388e3c; /* Darker green for hover */
-        }
+    .button.update:hover {
+        background-color: #388e3c;
+        /* Darker green for hover */
+    }
 
-        .button.back-to-dashboard {
-            background-color: #2196f3; /* Blue for back to dashboard button */
-            color: #ffffff;
-        }
+    .button.back-to-dashboard {
+        background-color: #2196f3;
+        /* Blue for back to dashboard button */
+        color: #ffffff;
+    }
 
-        .button.back-to-dashboard:hover {
-            background-color: #1976d2; /* Darker blue for hover */
-        }
+    .button.back-to-dashboard:hover {
+        background-color: #1976d2;
+        /* Darker blue for hover */
+    }
     </style>
 </head>
+
 <body>
     <div class="form-container">
         <form class="form" method="POST">
@@ -253,19 +266,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <input type="hidden" name="form_token" value="<?php echo htmlspecialchars($_SESSION['form_token']); ?>">
 
             <div class="input-container">
-                <input type="text" name="name" value="<?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?>" required />
+                <input type="text" name="name"
+                    value="<?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?>"
+                    required />
                 <label for="name">Full Name</label>
             </div>
             <div class="input-container">
-                <input type="email" name="email" value="<?php echo isset($user['email']) ? htmlspecialchars($user['email']) : ''; ?>" required />
+                <input type="email" name="email"
+                    value="<?php echo isset($user['email']) ? htmlspecialchars($user['email']) : ''; ?>" required />
                 <label for="email">Email</label>
             </div>
             <div class="input-container">
-                <input type="text" name="address" value="<?php echo isset($user['address']) ? htmlspecialchars($user['address']) : ''; ?>" required />
+                <input type="text" name="address"
+                    value="<?php echo isset($user['address']) ? htmlspecialchars($user['address']) : ''; ?>" required />
                 <label for="address">Address</label>
             </div>
             <div class="input-container">
-                <input type="tel" name="phone" value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>" required />
+                <input type="tel" name="phone"
+                    value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>" required />
                 <label for="phone">Phone</label>
             </div>
             <div class="input-container">
@@ -281,4 +299,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
     </div>
 </body>
+
 </html>

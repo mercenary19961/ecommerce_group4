@@ -158,6 +158,8 @@ include 'includes/header.php';
         }
         .proceed_btn {
             margin-top: 10px;
+            background-color: #007bff;
+            color: white;
         }
         .button-group {
             display: flex;
@@ -165,6 +167,9 @@ include 'includes/header.php';
         }
         .back{
             width: 74px;
+        }
+        .update_btn {
+            background-color: #72aec8 !important;
         }
     </style>
 </head>
@@ -185,12 +190,12 @@ include 'includes/header.php';
                         <input type="text" name="expiry_date" value="<?php echo htmlspecialchars($user['expiry_date'] ?? ''); ?>" placeholder="Expiry Date (YYYY-MM-DD)" required>
                         <input type="text" name="cvv" value="<?php echo htmlspecialchars($user['cvv'] ?? ''); ?>" placeholder="CVV">
                         <div class="button-group">
-                            <button type="submit">Update</button>
+                            <button class="update_btn" type="submit">Update</button>
                             <a href="javascript:history.back()" class="btn btn-secondary back">Back</a>
                         </div>
                     </form>
                     <?php if (!empty($_SESSION['cart']) && $user): ?>
-                        <a href="credit_card_payment.php" class="btn btn-primary proceed_btn">Proceed to Payment</a>
+                        <a href="credit_card_payment.php" class="btn proceed_btn">Proceed to Payment</a>
                     <?php endif; ?>
                 </div>
             </div>

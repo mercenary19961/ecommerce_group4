@@ -138,6 +138,10 @@ include 'includes/header.php';
         }
         .back_btn {
             background-color: #6c757d !important;
+            padding: 10px 20px;
+        }
+        .update_btn{
+            background-color: #72aec8 !important;
         }
     </style>
 </head>
@@ -157,8 +161,8 @@ include 'includes/header.php';
                         <input type="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" placeholder="Email" required>
                         <input type="text" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>" placeholder="Phone" required>
                         <input type="text" name="address" value="<?php echo htmlspecialchars($user['address']); ?>" placeholder="Address">
-                        <button type="submit">Update</button>
-                        <a href="user.php" class="back_btn">Back</a>
+                        <button class="update_btn" type="submit">Update</button>
+                        <a href="user.php" class="back_btn btn btn-secondary">Back</a>
                     </form>
                 </div>
             </div>

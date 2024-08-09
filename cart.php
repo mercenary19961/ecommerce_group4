@@ -1,6 +1,10 @@
 <?php
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
+}
+if (!isset($_SESSION['previous_page']) && !isset($_POST['action'])) {
+    $_SESSION['previous_page'] = $_SERVER['HTTP_REFERER'] ?? 'products.php';
 }
 include 'config/db_connect.php';
 
@@ -147,6 +151,9 @@ include 'includes/header.php';
             width: 20%;
             margin-bottom: 10px;
         }
+        .discount-amount {
+            color: #ef4444 !important;
+        }
     </style>
 </head>
 <body>
@@ -205,17 +212,17 @@ include 'includes/header.php';
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                                         <input type="hidden" name="action" value="add">
-                                        <button type="submit" class="btn btn-custom btn-sm">+</button>
+                                        <button type="submit" class="btn btn-custom btn-sm"><i class="fa-solid fa-plus" style="color: #ffffff;"></i></button>
                                     </form>
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                                         <input type="hidden" name="action" value="remove">
-                                        <button type="submit" class="btn btn-custom btn-sm">-</button>
+                                        <button type="submit" class="btn btn-custom btn-sm"><i class="fa-solid fa-minus" style="color: #ffffff;"></i></button>
                                     </form>
                                     <form method="post" action="cart.php" style="display:inline;">
                                         <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
                                         <input type="hidden" name="action" value="delete">
-                                        <button type="submit" class="btn btn-custom btn-sm">Remove</button>
+                                        <button type="submit" class="btn btn-custom btn-sm"><i class="fa-solid fa-trash-can" style="color: #ffffff;"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -223,18 +230,18 @@ include 'includes/header.php';
                     <?php endforeach; ?>
                     <tr>
                         <td colspan="5" class="text-right"><strong>Total Cost:</strong></td>
-                        <td><strong>$<?php echo number_format($total_cost, 2); ?></strong></td>
+                        <td class="total-cost"><strong>$<?php echo number_format($total_cost, 2); ?></strong></td>
                         <td></td>
                     </tr>
                     <?php if ($coupon_discount > 0): ?>
                         <tr>
                             <td colspan="5" class="text-right"><strong>Discount (<?php echo $coupon_discount; ?>%):</strong></td>
-                            <td><strong>-$<?php echo number_format($total_cost * ($coupon_discount / 100), 2); ?></strong></td>
+                            <td class="discount-amount"><strong>-$<?php echo number_format($total_cost * ($coupon_discount / 100), 2); ?></strong></td>
                             <td></td>
                         </tr>
                         <tr>
                             <td colspan="5" class="text-right"><strong>Total After Discount:</strong></td>
-                            <td><strong>$<?php echo number_format($total_cost_after_coupon, 2); ?></strong></td>
+                            <td class="total-after-discount"><strong>$<?php echo number_format($total_cost_after_coupon, 2); ?></strong></td>
                             <td></td>
                         </tr>
                     <?php endif; ?>
@@ -246,7 +253,7 @@ include 'includes/header.php';
                     <a href="credit_card_payment.php" class="btn btn-secondary">Pay with Credit</a>
                 </div>
                 <div class="right-align">
-                    <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
+                    <a href="<?php echo $_SESSION['previous_page']; ?>" class="btn btn-secondary">Back</a>
                 </div>
             </div>
             <form method="post" action="cart.php" class="coupon_form">
@@ -265,5 +272,4 @@ include 'includes/header.php';
     </main>
 </body>
 </html>
-
 <?php include 'includes/footer.php'; ?>

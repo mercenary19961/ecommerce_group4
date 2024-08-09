@@ -77,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 unset($_SESSION['cart']);
                 unset($_SESSION['coupon_discount']);
                 unset($_SESSION['coupon_code']);
+                unset($_SESSION['previous_page']);
 
                 $response['success'] = true;
                 $response['message'] = 'Order placed successfully! Your order will be delivered to you soon.';

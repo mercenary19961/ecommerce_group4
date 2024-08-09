@@ -16,6 +16,7 @@
         .container1 {
             max-width: 1200px;
             margin: 0 auto;
+            padding-left: 70px;
         }
         .row {
             display: flex;
@@ -70,7 +71,7 @@
                 <div class="col-md-4 col-sm-4">
                     <div class="copyright">
                         <p>© Copyright 2024 MacStore. 
-                        <a href="contact.html">Contact Us</a></p>
+                        <a style="margin-left: 30px;" href="contact.html">Contact Us</a></p>
                     </div>
                 </div>
             </div>

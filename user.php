@@ -105,7 +105,7 @@ include 'includes/header.php';
             <a href="logout.php" style="color: #ef4444;">Logout</a>
         </div>
         <div class="content">
-            <h1>User Profile</h1>
+            <h1><?php echo htmlspecialchars($user['username']); ?>'s Profile</h1>
             <div class="user-details">
                 <p><strong>Username:</strong> <?php echo htmlspecialchars($user['username']); ?></p>
                 <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>

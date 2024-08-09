@@ -26,17 +26,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 
 <main class="container"> 
     <br>
-    <h1>Our Offers</h1>
+    <div class="sale_container">
+        <br>
+        <h1>Our Offers</h1>
+        <br>
+        <!-- Dropdown menu for selecting discount percentage -->
+        <div class="mb-1">
+            <select id="discount-filter" class="form-select" onchange="filterDiscount()" >
+                <option value="">Select Discount</option>
+                <?php foreach ($discounts as $discount): ?>
+                    <option value="<?php echo $discount; ?>"><?php echo $discount; ?>%</option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
-    <!-- Dropdown menu for selecting discount percentage -->
-    <div class="mb-1">
-        <label for="discount-filter" class="form-label">Select Discount:</label>
-        <select id="discount-filter" class="form-select" onchange="filterDiscount()" >
-            <option value="">Select Discount</option>
-            <?php foreach ($discounts as $discount): ?>
-                <option value="<?php echo $discount; ?>"><?php echo $discount; ?>%</option>
-            <?php endforeach; ?>
-        </select>
     </div>
     <?php
     foreach ($discounts as $discountPercentage) {
@@ -54,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 
         // Display section
         echo "<div id='discount-{$discountPercentage}' class='discount-section'>";
-        echo "<br> <br> <h2>{$discountPercentage}%</h2> <br> <br>";
+        echo "<br> <br> <h2>Discount {$discountPercentage}%</h2> <br> <br>";
 
         if ($result->num_rows > 0) {
             echo '<div class="row">'; 
@@ -78,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                                 <a href="view_product.php?id=<?php echo htmlspecialchars($row["product_id"]); ?>" class="btn btn-primary">Check Product</a>
                                 <form method="post" action="sale.php" class="d-inline">
                                     <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($row["product_id"]); ?>">
-                                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                                    <button type="submit" class="btn btn-secondary">Add to Cart</button>
                                 </form>
                             </div>
                         </div>
@@ -89,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
 
             echo '</div>'; 
         } else {
-            echo "<p>No products with {$discountPercentage}% discount.</p>";
+            echo "<p>No products with Discount {$discountPercentage}%.</p>";
         }
 
         echo '</div>'; // discount-section
@@ -98,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     $conn->close();
     ?>
 </main>
+
 
 <?php include 'includes/footer.php'; ?>
 

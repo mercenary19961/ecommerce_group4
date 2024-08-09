@@ -10,57 +10,65 @@ if (isset($_SESSION['cart'])) {
     }
 }
 
+// Check if the user is logged in
+$isLoggedIn = isset($_SESSION['user_id']);
+
 include 'config/db_connect.php'; 
 
 function display_products($category_id, $category_name) {
-  global $conn;
-  $sql = "SELECT product_id, image, name, price FROM products WHERE category_id = $category_id LIMIT 8";
-  $result = $conn->query($sql);
+    global $conn;
+    $sql = "SELECT product_id, image, name, price FROM products WHERE category_id = $category_id LIMIT 8";
+    $result = $conn->query($sql);
 
-  echo "<section id='{$category_name}-products' class='product-store position-relative padding-large no-padding-top'>";
-  echo "<div class='container'>";
-  echo "<div class='row'>";
-  echo "<div class='display-header d-flex justify-content-between pb-3'>";
-  echo "<h2 class='display-7 text-dark text-uppercase'>$category_name</h2>";
-  echo "<div class='btn-right'>";
-  echo "<a href='products.php' class='btn btn-medium btn-normal text-uppercase'>Go to Shop</a>";
-  echo "</div>";
-  echo "</div>";
-  echo "<div class='swiper product-swiper'>";
-  echo "<div class='swiper-wrapper'>";
+    echo "<section id='{$category_name}-products' class='product-store position-relative padding-large no-padding-top'>";
+    echo "<div class='container'>";
+    echo "<div class='row'>";
+    echo "<div class='display-header d-flex justify-content-between pb-3'>";
+    echo "<h2 class='display-7 text-dark text-uppercase'>$category_name</h2>";
+    echo "<div class='btn-right'>";
+    echo "<a href='products.php' class='btn btn-medium btn-normal text-uppercase'>Go to Shop</a>";
+    echo "</div>";
+    echo "</div>";
+    echo "<div class='swiper product-swiper'> ";
 
-  if ($result->num_rows > 0) {
-      while ($row = $result->fetch_assoc()) {
-          echo "<div class='swiper-slide'>";
-          echo "<div class='product-card position-relative'>";
-          echo "<div class='image-holder'>";
-          echo "<img style='width: 400px; height: 300px;' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
-          echo "</div>";
-          echo "<div class='cart-concern position-absolute'>";
-          echo "<div class='cart-button d-flex'>";
-          echo "<button onclick='run()' class='btn btn-medium btn-black add-to-cart' data-id='" . $row["product_id"] . "'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></button>";
-          echo "</div>";
-          echo "</div>";
-          echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
-          echo "<h3 class='card-title text-uppercase'>";
-          echo "<a href='view_product.php?id=" . $row["product_id"] . "'>" . $row["name"] . "</a>";
-          echo "</h3>";
-          echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
-          echo "</div>";
-          echo "</div>";
-          echo "</div>";
-      }
-  } else {
-      echo "No products found.";
-  }
+    echo "<div class='swiper-wrapper'>";
 
-  echo "</div>";
-  echo "<div class='swiper-pagination position-absolute text-center'></div>";
-  echo "</div>";
-  echo "</div>";
-  echo "</section>";
-  echo "<hr>";
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "<div class='swiper-slide'>";
+            echo "<div class='product-card position-relative'>";
+            echo "<div class='image-holder'>";
+            echo "<img style='width: 400px; height: 300px;' src='images/" . $row["image"] . "' alt='product-item' class='img-fluid'>";
+            echo "</div>";
+            echo "<div class='cart-concern position-absolute'>";
+            echo "<div class='cart-button d-flex flex-column'>";
+            echo "<a href='view_product.php?id=" . $row["product_id"] . "' class='btn btn-medium btn-black mb-2'>Check product</a>";
+            echo "<button onclick='run()' class='btn btn-medium btn-black add-to-cart' data-id='" . $row["product_id"] . "'>Add to Cart<svg class='cart-outline'><use xlink:href='#cart-outline'></use></svg></button>";
+            echo "</div>";
+            echo "</div>";
+            echo "<div class='card-detail d-flex justify-content-between align-items-baseline pt-3'>";
+            echo "<h3 class='card-title text-uppercase'>";
+            echo "<a href='view_product.php?id=" . $row["product_id"] . "'>" . $row["name"] . "</a>";
+            echo "</h3>";
+            echo "<span class='item-price text-primary'>$" . $row["price"] . "</span>";
+            echo "</div>";
+            echo "</div>";
+            echo "</div>";
+        }
+    } else {
+        echo "No products found.";
+    }
+
+    echo "</div>";
+    echo "<div class='swiper-pagination position-absolute text-center'></div>";
+    echo "<br>";
+    echo "</div>";
+    echo "</div>";
+    echo "</section>";
+    echo "<hr>";
+    echo "<br><br>";
 }
+
 ?>
 
 
@@ -77,7 +85,7 @@ function display_products($category_id, $category_name) {
     <meta name="author" content="">
     <meta name="keywords" content="">
     <meta name="description" content="">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -86,13 +94,125 @@ function display_products($category_id, $category_name) {
         href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Lato:wght@300;400;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="css/style.css">
-    <!-- script -->
     <script src="js/modernizr.js"></script>
     <style>
+    .container-fluid {
+        max-width: 1340px;
+    }
     h3 {
         line-height: 6vh;
         font-family: "Jost", sans-serif;
         font-weight: 100;
+    }
+    .product-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 10px;
+    transition: box-shadow 0.3s ease-in-out;
+    text-align: center;
+    width: 100%;
+    }
+    .product-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .card-detail {
+        height: 60px; 
+        overflow: hidden; 
+    }
+    .card-title {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        display: block;
+        margin-bottom: 5px;
+    }
+    .item-price {
+        color: #007bff;
+        font-weight: bold;
+    }
+    .product-swiper {
+        position: relative;
+        margin-bottom: 60px; 
+    }
+    .swiper-pagination {
+        position: absolute;
+        bottom: -5px !important; 
+        width: 100%;
+        text-align: center;
+    }
+    .swiper-pagination-bullet {
+        background-color: #cccccc; 
+        opacity: 1;
+    }
+    .swiper-pagination-bullet-active {
+        background-color: #007bff;
+    }
+    .swiper-slide {
+        padding-bottom: 20px;
+    }
+    .swiper-pagination-bullet {
+    background-color: #cccccc;
+    opacity: 1;
+    }
+    .swiper-pagination-bullet-active {
+        background-color: #72aec8;
+    }
+    #Mobiles,
+    #Tablets,
+    #Accessories,
+    #MAC {
+        scroll-margin-top: 110px;
+    }
+    .icon-wrapper {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    }
+
+    .icon-tooltip {
+        visibility: hidden;
+        opacity: 0;
+        width: 150px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 5px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 1;
+        top: 125%; /* Position the tooltip above the icon */
+        left: 50%;
+        margin-left: -75px; /* Center the tooltip */
+        transition: opacity 0.3s ease;
+        pointer-events: none; /* Prevent the tooltip from being clickable */
+    }
+
+    .icon-tooltip::after {
+        content: "";
+        position: absolute;
+        bottom: 100%; /* Bottom of the tooltip */
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+    }
+
+    .icon-wrapper:hover .icon-tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+    .container1 {
+        display: flex;
+        height: 15vh;
+        max-width: 1350px;
+        align-items: center;
+        justify-content: center !important;
+        padding-left: 350px;
+    }
+    .p-width {
+        width: 200px;
     }
     </style>
 </head>
@@ -189,21 +309,6 @@ function display_products($category_id, $category_name) {
         </symbol>
     </svg>
 
-    <div class="search-popup">
-        <div class="search-popup-container">
-
-            <form role="search" method="get" class="search-form" action="">
-                <input type="search" id="search-form" class="search-field" placeholder="Type and press enter" value=""
-                    name="s" />
-                <button type="submit" class="search-submit"><svg class="search">
-                        <use xlink:href="#search"></use>
-                    </svg></button>
-            </form>
-
-
-        </div>
-    </div>
-
     <header id="header" class="site-header header-scrolled position-fixed text-black bg-light">
         <nav id="header-nav" class="navbar navbar-expand-lg px-3 mb-3">
             <div class="container-fluid">
@@ -227,8 +332,7 @@ function display_products($category_id, $category_name) {
                             aria-label="Close" data-bs-target="#bdNavbar"></button>
                     </div>
                     <div class="offcanvas-body">
-                        <ul id="navbar"
-                            class="navbar-nav text-uppercase justify-content-end align-items-center flex-grow-1 pe-3">
+                        <ul id="navbar" class="navbar-nav text-uppercase justify-content-end align-items-center flex-grow-1 pe-3">
                             <li class="nav-item">
                                 <a class="nav-link me-4 active" href="#billboard">Home</a>
                             </li>
@@ -242,61 +346,59 @@ function display_products($category_id, $category_name) {
                                 <a class="nav-link me-4" href="contact.html">Contact us</a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="#"
-                                    role="button" aria-expanded="false">Categories</a>
+                                <a class="nav-link me-4 dropdown-toggle link-dark" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Categories</a>
                                 <ul class="dropdown-menu">
-                                    <li>
-                                        <a href="#Mobiles" class="dropdown-item">IPhones</a>
-                                    </li>
-                                    <li>
-                                        <a href="#Tablets" class="dropdown-item">Ipads</a>
-                                    </li>
-                                    <li>
-                                        <a href="#MAC" class="dropdown-item">MAC</a>
-                                    </li>
-                                    <li>
-                                        <a href="#Accessories" class="dropdown-item">Accessories</a>
-                                    </li>
+                                    <li><a href="#Mobiles" class="dropdown-item">Mobiles</a></li>
+                                    <li><a href="#Tablets" class="dropdown-item">Tablets</a></li>
+                                    <li><a href="#Accessories" class="dropdown-item">Accessories</a></li>
+                                    <li><a href="#MAC" class="dropdown-item">MAC</a></li>
                                 </ul>
                             </li>
+                            <!-- Cart Icon -->
                             <li class="nav-item">
-                                <div class="user-items ps-5">
-                                    <ul class="d-flex justify-content-end list-unstyled">
-                                        <?php $isLoggedIn =isset($_SESSION['user_id']); ?>
-                                        <li class='pe-3'>
-                                            <?php if ($isLoggedIn): ?>
-                                            <a href="cart.php" class="iconss">
-                                                <svg class="cart">
-                                                    <use xlink:href="#cart"></use>
-                                                    <?php 
-                                                    if (session_status() == PHP_SESSION_NONE) {
-                                                      session_start();
-                                                    }
-                                                    if ($total_quantity > 0): ?>
-                                                    <span class="badge bg-danger"><?php echo $total_quantity; ?></span>
-                                                    <?php endif; ?>
-                                                </svg>
-                                            </a>
-                                        </li>
-                                        <li class="pe-3">
-                                            <a href="user.php" class="iconss">
-                                                <svg class="user">
-                                                    <use xlink:href="#user"></use>
-                                                </svg>
-                                            </a>
-                                        </li>
-                                        <?php else: ?>
-                                        <a href="login.php" class="btnn">Login</a>
-                                        <?php  endif; ?>
+                                <a href="cart.php" class="nav-link position-relative icon-wrapper">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <span class="icon-tooltip">Check the cart</span>
+                                    <?php if ($total_quantity > 0): ?>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        <?php echo $total_quantity; ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </a>
                             </li>
-                            <li>
-                                <?php if (!$isLoggedIn): ?>
-                                <a href="register.php" class="btnn" id="blue-btnn">Sign up</a>
-                                <?php endif; ?>
+                            <?php if ($isLoggedIn): ?>
+                                <!-- Profile Icon -->
+                                <li class="nav-item">
+                                    <a href="user.php" class="nav-link icon-wrapper">
+                                        <i class="fas fa-user"></i>
+                                        <span class="icon-tooltip">Go to profile page</span>
+                                    </a>
+                                </li>
+                                <!-- Logout Icon -->
+                                <li class="nav-item">
+                                    <a href="logout.php" class="nav-link icon-wrapper">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span class="icon-tooltip">Want to logout?</span>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <!-- Login Icon -->
+                                <li class="nav-item">
+                                    <a href="login.php" class="nav-link icon-wrapper">
+                                        <i class="fas fa-sign-in-alt"></i>
+                                        <span class="icon-tooltip">Go to login page</span>
+                                    </a>
+                                </li>
+                                <!-- Signup Icon -->
+                                <li class="nav-item">
+                                    <a href="register.php" class="nav-link icon-wrapper">
+                                        <i class="fas fa-user-plus"></i>
+                                        <span class="icon-tooltip">Go to signup page</span>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                         </ul>
                     </div>
-                    </li>
-                    </ul>
                 </div>
             </div>
             </div>
@@ -340,7 +442,7 @@ function display_products($category_id, $category_name) {
                         <div class="row d-flex align-items-center">
                             <div class="col-md-6">
                                 <div class="banner-content" style="position: relative; top: 15vh;">
-                                    <h1 class="display-2 text-uppercase text-dark pb-5">IPHONES</h1>
+                                    <h1 class="display-2 text-uppercase text-dark pb-5">Mobiles</h1>
                                     <a href="products.php"
                                         class="btn btn-medium btn-dark text-uppercase btn-rounded-none">Shop Product</a>
                                 </div>
@@ -459,7 +561,7 @@ function display_products($category_id, $category_name) {
 
     </div>
     <section id="yearly-sale" class="bg-light-blue overflow-hidden mt-5 padding-xlarge"
-        style="background-image: url('images/single-image1.png');background-position: right; background-repeat: no-repeat;">
+        style="background-image: url('images/single-image1.png');background-position: right; background-repeat: no-repeat; margin: 5px auto; max-width:1300px">
         <div class="row d-flex flex-wrap align-items-center">
             <div class="col-md-6 col-sm-12">
                 <div class="text-content offset-4 padding-medium">
@@ -478,7 +580,7 @@ function display_products($category_id, $category_name) {
     <div id="footer-bottom">
         <div class="container1">
             <div class="row d-flex flex-wrap justify-content-between">
-                <div class="col-md-4 col-sm-4">
+                <div class="col-md-3 col-sm-3">
                     <div class="Shipping d-flex">
                         <p>We ship with:</p>
                         <div class="card-wrap ps-2">
@@ -486,9 +588,9 @@ function display_products($category_id, $category_name) {
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-4">
+                <div class="col-md-4 col-sm-3">
                     <div class="payment-method d-flex">
-                        <p>Payment options:</p>
+                        <p class="p-width">Payment options:</p>
                         <div class="payment-method card-wrap ps-2">
                             <img src="images/visa.jpg" alt="visa">
                             <img src="images/mastercard.jpg" alt="mastercard">
@@ -499,7 +601,7 @@ function display_products($category_id, $category_name) {
                 <div class="col-md-4 col-sm-4">
                     <div class="copyright" style="line-hight:3px" style="color:#717171">
                         <p>©Copyright2024MacStore.
-                            <a href="contact.html" style="text-decoration:none ; color:#AEAEAE ; ">contact us</a>
+                            <a href="contact.html" style="text-decoration:none ; color:#AEAEAE ; margin-left: 30px;">contact us</a>
                         </p>
                     </div>
                 </div>
@@ -512,31 +614,53 @@ function display_products($category_id, $category_name) {
     <script type="text/javascript" src="js/plugins.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-    function run() {
-        location.reload();
-    }
-
-    $(document).ready(function() {
-        $('.add-to-cart').on('click', function() {
-            var productId = $(this).data('id');
-            $.ajax({
-                url: 'add_to_cart.php',
-                method: 'POST',
-                data: {
-                    product_id: productId
-                },
-                dataType: 'json',
-                success: function(response) {
-                    alert('Product added to cart. Cart count: ' + response.cartCount);
-                },
-                error: function() {
-                    alert('Failed to add product to cart.');
-                }
+    <script> // Sliders pagination dots script
+        document.addEventListener('DOMContentLoaded', function () {
+            var sliders = document.querySelectorAll('.product-swiper');
+            
+            sliders.forEach(function (slider) {
+                new Swiper(slider, {
+                    slidesPerView: 4, // Adjust as per your layout
+                    spaceBetween: 30,
+                    loop: true,
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    navigation: {
+                        nextEl: '.swiper-arrow-next',
+                        prevEl: '.swiper-arrow-prev',
+                    },
+                });
             });
         });
-    });
     </script>
+    <script> // Fot adding products to cart 
+        $(document).ready(function() {
+            $('.add-to-cart').on('click', function() {
+                var productId = $(this).data('id');
+                $.ajax({
+                    url: 'add_to_cart.php',
+                    method: 'POST',
+                    data: {
+                        product_id: productId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        // Update the cart count without refreshing the page
+                        if (response.cartCount !== undefined) {
+                            $('.badge').text(response.cartCount);
+                        }
+                        alert('Product added to cart. Cart count: ' + response.cartCount);
+                    },
+                    error: function() {
+                        alert('Failed to add product to cart.');
+                    }
+                });
+            });
+        });
+</script>
+
 </body>
 
 </html>

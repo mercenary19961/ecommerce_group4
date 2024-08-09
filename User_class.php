@@ -58,23 +58,53 @@ class User {
         return $this->errors;
     }
 
-    public function register($email, $username, $phone, $address, $password) {
-        if ($this->validateRegistrationData($email, $username, $phone, $address, $password, $password)) {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT); // Securely hash the password
+    public function emailExists($email) {
+        $stmt = $this->conn->prepare("SELECT user_id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->store_result();
+        $exists = $stmt->num_rows > 0;
+        $stmt->close();
+        return $exists;
+    }
 
-            // Prepare SQL statement to prevent SQL injection
-            $stmt = $this->conn->prepare("INSERT INTO users (username, email, address, password, phone, role_id) VALUES (?, ?, ?, ?, ?, 2)");
-            $stmt->bind_param("ssssi", $username, $email, $address, $hashed_password, $phone);
+    public function usernameExists($username) {
+        $stmt = $this->conn->prepare("SELECT user_id FROM users WHERE username = ?");
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $stmt->store_result();
+        $exists = $stmt->num_rows > 0;
+        $stmt->close();
+        return $exists;
+    }
 
-            if ($stmt->execute()) {
-                return true;
-            } else {
-                $this->errors[] = "Error: " . $stmt->error;
-                return false;
-            }
+    public function register($email, $username, $phone, $address, $password, $confirmPassword) {
+        if (!$this->validateRegistrationData($email, $username, $phone, $address, $password, $confirmPassword)) {
+            return false;
+        }
 
+        if ($this->emailExists($email)) {
+            $this->errors[] = "Email already exists.";
+            return false;
+        }
+
+        if ($this->usernameExists($username)) {
+            $this->errors[] = "Username already exists.";
+            return false;
+        }
+
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT); // Securely hash the password
+
+        // Prepare SQL statement to prevent SQL injection
+        $stmt = $this->conn->prepare("INSERT INTO users (username, email, address, password, phone, role_id) VALUES (?, ?, ?, ?, ?, 2)");
+        $stmt->bind_param("ssssi", $username, $email, $address, $hashed_password, $phone);
+
+        if ($stmt->execute()) {
             $stmt->close();
+            return true;
         } else {
+            $this->errors[] = "Error: " . $stmt->error;
+            $stmt->close();
             return false;
         }
     }

@@ -2,34 +2,43 @@
 session_start();
 include 'config/connection.php';
 
-// Generate a unique token for form submission
-if (empty($_SESSION['form_token'])) {
-    $_SESSION['form_token'] = bin2hex(random_bytes(32));
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: /ecommerce_group4-main/login.php");
+    exit();
 }
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch user data
+$sql_user = "SELECT * FROM users WHERE user_id = ?";
+$stmt_user = $conn->prepare($sql_user);
+$stmt_user->bind_param('i', $user_id);
+$stmt_user->execute();
+$result_user = $stmt_user->get_result();
+$user = $result_user->fetch_assoc();
 
 // Handle creating a new user
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
-    // Invalidate the token
-    unset($_SESSION['form_token']);
-
     // Check if required fields are set
     if (isset($_POST['name'], $_POST['email'], $_POST['address'], $_POST['phone'], $_POST['password'], $_POST['con_password'])) {
-        // Retrieve user details
         $name = $_POST['name'];
         $email = $_POST['email'];
         $address = $_POST['address'];
         $phone = $_POST['phone'];
         $password = $_POST['password'];
         $con_password = $_POST['con_password'];
-        $role = 2;
+        $role = 2; // Default role for new users
 
         // Check if email already exists
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->bind_result($count);
+        $stmt->fetch();
+        $stmt->close();
 
-        if ($result->num_rows > 0) {
+        if ($count > 0) {
             echo <<<HTML
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
             <script>
@@ -42,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
             });
             </script>
 HTML;
-        } elseif ($password == $con_password) {
+        } elseif ($password === $con_password) {
             // Hash the password before storing it
             $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
@@ -68,6 +77,7 @@ HTML;
                 });
                 </script>
 HTML;
+
             } else {
                 echo "Error: " . htmlspecialchars($stmt->error);
             }
@@ -106,7 +116,7 @@ HTML;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
     $user_id = $_POST['user_id'];
 
-    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
+    $stmt = $conn->prepare("DELETE FROM users WHERE user_id = ?");
     if ($stmt === false) {
         die('Prepare failed: ' . htmlspecialchars($conn->error));
     }
@@ -136,6 +146,25 @@ HTML;
 // Fetch and display users
 $sql = "SELECT * FROM users";
 $result = $conn->query($sql);
+
+// Function to get role name
+function roleyname($role_id) {
+    global $conn;
+
+    $sql = "SELECT role_name FROM roles WHERE role_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $role_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $role_name = '';
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $role_name = $row['role_name'];
+    }
+
+    return $role_name;
+}
 ?>
 
 <!DOCTYPE html>
@@ -146,209 +175,37 @@ $result = $conn->query($sql);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard</title>
 
-    <!-- font google icon  -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <!-- Font Google Icons -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Montserrat Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet" />
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/btinlogout.css" />
-
-    <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .table-container {
-            margin: 20px;
-        }
-
-        .table-container h2 {
-            color: #ffffff;
-        }
-
-        .table-container table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .table-container th,
-        .table-container td {
-            padding: 10px;
-            text-align: left;
-        }
-
-        .table-container th {
-            background-color: #1f1f1f;
-        }
-
-        .table-container td {
-            background-color: #2a2a2a;
-        }
-
-        .table-container tr:nth-child(even) td {
-            background-color: #242424;
-        }
-
-        .table-container img {
-            max-width: 100px;
-        }
-
-        .button {
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-
-        }
-
-        .button.create {
-            width: 11%;
-            background-color: #007bff;
-            color: white;
-            margin-left : 22px;
-        }
-
-        .button.create:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        .button.edit {
-            width: 50%;
-            background-color: #28a745;
-            color: white;
-        }
-
-        .button.edit:hover {
-            background-color: #218838;
-            transform: scale(1.05);
-        }
-
-        .button.delete {
-            width: 50%;
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .button.delete:hover {
-            background-color: #c82333;
-            transform: scale(1.05);
-        }
-
-        .shadow {
-            position: absolute;
-            left: 50%;
-            top: 5%;
-            transform: translate(-50%, 0);
-            display: none;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .form {
-
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 380px;
-            background-color: #fff;
-            border-radius: 15px;
-            padding: 30px 78px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
-
-        }
-
-        .title {
-            color: black;
-            font-weight: bold;
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .sub {
-            text-align: center;
-            color: black;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .sub a {
-            color: rgb(23, 111, 211);
-        }
-
-        .avatar {
-            height: 70px;
-            width: 70px;
-            background-color: rgb(23, 111, 211);
-            background-image: url('uploads/icon.png');
-            border-radius: 50%;
-            align-self: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-container {
-            position: relative;
-        }
-
-        .input-container input,
-        .input-container textarea,
-        button {
-            border: 1px solid #ddd;
-            outline: none;
-            width: 100%;
-            padding: 12px 16px;
-            background-color: rgb(247, 243, 243);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .input-container textarea {
-            resize: vertical;
-        }
-
-        button {
-            margin-top: 10px;
-            background-color: rgb(23, 111, 211);
-            color: #fff;
-            text-transform: uppercase;
-            font-weight: bold;
-        }
-
-        button:hover {
-            background-color: #1a91d0;
-        }
-
-        .input-container input:focus,
-        .input-container textarea:focus {
-            border-color: rgb(23, 111, 211);
-            box-shadow: 0 0 5px rgba(23, 111, 211, 0.5);
-        }
-
-        #file {
-            display: none;
-        }
-
-        .color_line {
-            color: #121212;
-        }
-    </style>
+    <link rel="stylesheet" href="css/tables.css" />
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
+<style>
+.button.create {
+    border-radius: 20px;
+    width: 14%;
+    background-color: #007bff;
+    color: white;
+    margin-left: 22px;
+}
+
+.admin {
+    color: #000;
+}
+</style>
 
 <body>
     <div class="grid-container">
@@ -358,16 +215,14 @@ $result = $conn->query($sql);
                 <span class="material-icons-outlined">menu</span>
             </div>
             <div class="header-left">
-
+                <h2 class="admin">Welcome , <?php echo htmlspecialchars($user['username']); ?></h2>
             </div>
             <div class="header-right">
                 <span class="material-icons-outlined">
-                    <button class="btnlogout">Logout<div class="arrow-wrapper">
+                    <button class="btnlogout">LOGOUT<div class="arrow-wrapper">
                             <div class="arrow"></div>
-
                         </div>
                     </button></span>
-
             </div>
         </header>
         <!-- End Header -->
@@ -380,73 +235,64 @@ $result = $conn->query($sql);
                 </div>
                 <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
             </div>
-
             <ul class="sidebar-list">
-                <li class="sidebar-list-item">
-                    <a href="dashboard.php">
-                        <span class="material-icons-outlined">dashboard</span> Dashboard
-                    </a>
-                </li>
-                <li class="sidebar-list-item">
-                    <a href="product.php">
-                        <span class="material-icons-outlined">inventory_2</span> Products
-                    </a>
-                </li>
-                <li class="sidebar-list-item">
-                    <a href="categories.php">
-                        <span class="material-icons-outlined">category</span> Categories
-                    </a>
-                </li>
-                <li class="sidebar-list-item">
-                    <a href="users.php">
-                        <span class="material-icons-outlined">groups</span> Customers
-                    </a>
-                </li>
-
+                <li class="sidebar-list-item"><a href="dashboard.php"><span
+                            class="material-icons-outlined">dashboard</span> Dashboard</a></li>
+                <li class="sidebar-list-item"><a href="product.php"><span
+                            class="material-icons-outlined">inventory_2</span> Products</a></li>
+                <li class="sidebar-list-item"><a href="categories.php"><span
+                            class="material-icons-outlined">category</span> Categories</a></li>
+                <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span>
+                        Customers</a></li>
+                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign"
+                            style="color: #ffffff;"></i> Discount </a></li>
+                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent"
+                            style="color: #ffffff;"></i> Coupons </a></li>
             </ul>
         </aside>
         <!-- End Sidebar -->
 
         <div class="shadow" id="createForm">
-            <!-- Form for creating a new product -->
-            <form class="form" method="POST" enctype="multipart/form-data">
-                <span class="title">Add user</span>
+            <!-- Form for creating a new user -->
+            <form class="form" method="POST">
+                <span class="title">Add User</span>
 
-
                 <div class="input-container">
-                    <label class="color_line" for="name"> Name</label>
-                    <input type="text" name="name" placeholder=" Name" required />
+                    <label class="color_line" for="name">Name</label>
+                    <input type="text" name="name" placeholder="Name" required />
                 </div>
                 <div class="input-container">
-                    <label class="color_line" for="description">email</label>
-                    <input name="email" placeholder="example@gmail.com" required></input>
+                    <label class="color_line" for="email">Email</label>
+                    <input type="email" name="email" placeholder="example@gmail.com" required />
                 </div>
                 <div class="input-container">
-                    <label class="color_line" for="price">Address</label>
-                    <input type="text" name="address" placeholder="address : Amman" required />
+                    <label class="color_line" for="address">Address</label>
+                    <input type="text" name="address" placeholder="Address" required />
                 </div>
                 <div class="input-container">
-                    <label class="color_line" for="price">phone</label>
-                    <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" placeholder="07********">
+                    <label class="color_line" for="phone">Phone</label>
+                    <input type="tel" name="phone" pattern="[0-9]{10}" placeholder="07********" required />
                 </div>
                 <div class="input-container">
-                    <label class="color_line" for="stock">Password</label>
+                    <label class="color_line" for="password">Password</label>
                     <input type="password" name="password" placeholder="Password" required />
                 </div>
                 <div class="input-container">
-                    <label class="color_line" for="category_id">confirm Password</label>
-                    <input type="password" name="con_password" placeholder="confirm Password" required />
+                    <label class="color_line" for="con_password">Confirm Password</label>
+                    <input type="password" name="con_password" placeholder="Confirm Password" required />
                 </div>
 
-                <button style=" width: 100%;margin-left: 0px;" type="submit" name="create" class="button create">Create User</button>
-                <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
+                <button style="width: 22%;" type="submit" name="create" class="button create">Create User</button>
+                <button style=" background-color:#000" type="button" class="button"
+                    onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
 
         <!-- Main Content -->
         <main class="main-container">
-            <div class="main-title">
-                <button id="Add_product" class="button create" onclick="toggleForm('createForm')">Add User</button>
+            <h2 style="color:#666666; text-align:center; font-weight: bold;">USERS</h2>
+            <div style="justify-content: flex-end;" class="main-title">
+                <button id="Add_user" class="button create" onclick="toggleForm('createForm')">Add User</button>
             </div>
 
             <div class="table-container">
@@ -455,9 +301,9 @@ $result = $conn->query($sql);
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>email</th>
-                            <th>phone</th>
-                            <th>role_id</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
                             <th>Address</th>
                             <th>Actions</th>
                         </tr>
@@ -470,23 +316,28 @@ $result = $conn->query($sql);
                             echo "<td>" . htmlspecialchars($row['username']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['email']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['role_id']) . "</td>";
+                            echo "<td>" . htmlspecialchars(roleyname($row['role_id'])) . "</td>";
                             echo "<td>" . htmlspecialchars($row['address']) . "</td>";
 
                             echo "<td>
         <form method='POST' style='display:inline'>
             <input type='hidden' name='user_id' value='" . htmlspecialchars($row['user_id']) . "'>
-            <button type='submit' name='delete' class='button delete'>Delete</button>
+            <button style='background:none;' type='submit' name='delete' class='button delete' aria-label='Delete'>
+                <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
+                    <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
+                    <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
+                </svg>
+            </button>
         </form>
         <a href='users_update.php?user_id=" . htmlspecialchars($row['user_id']) . "'>
-            <button class='button edit'>Edit</button>
+            <button type='button' class='button edit' aria-label='Edit'>
+                <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
+            </button>
         </a>
     </td>";
                             echo "</tr>";
                         }
                         ?>
-
-
                     </tbody>
                 </table>
             </div>
@@ -494,13 +345,12 @@ $result = $conn->query($sql);
     </div>
 
     <script>
-        function toggleForm(id) {
-            const form = document.getElementById(id);
-            const btn = document.getElementById("Add_product");
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-            btn.style.display = form.style.display === 'none' ? 'block' : 'none';
-
-        }
+    function toggleForm(id) {
+        const form = document.getElementById(id);
+        const btn = document.getElementById("Add_user");
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        btn.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
     </script>
 </body>
 

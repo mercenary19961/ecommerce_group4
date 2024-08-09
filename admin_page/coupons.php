@@ -18,31 +18,42 @@ $stmt_user->execute();
 $result_user = $stmt_user->get_result();
 $user = $result_user->fetch_assoc();
 
+// Handle creating a new coupon
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
+    // Retrieve coupon details
+    $code = $_POST['code'];
+    $discount_id = $_POST['discount_id'];
+    $expiry_date = $_POST['expiry_date'];
 
-// Handle creating a new category
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create']) ) {
-
-    // Retrieve category details
-    $name_Category = $_POST['name_Category'];
-
-    // Check if the category already exists
-    $stmt = $conn->prepare("SELECT COUNT(*) FROM category WHERE name = ?");
-    $stmt->bind_param("s", $name_Category);
+    // Check if the coupon code already exists
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM coupons WHERE code = ?");
+    $stmt->bind_param("s", $code);
     $stmt->execute();
     $stmt->bind_result($count);
     $stmt->fetch();
     $stmt->close();
 
     if ($count > 0) {
-        echo '<script>alert("You must enter a category name that does not exist ");</script>';
+        echo "<script>
+        alert('Error: coupon is already exist .');
+          window.location.href = 'coupons.php';
 
+    </script>";
     } else {
-        // Insert category details into database
-        $stmt = $conn->prepare("INSERT INTO category (name) VALUES (?)");
-        $stmt->bind_param("s", $name_Category);
+        // Insert coupon details into database
+        $stmt = $conn->prepare("INSERT INTO coupons (code, discount_id, expiry_date) VALUES (?, ?, ?)");
+        $stmt->bind_param("sis", $code, $discount_id, $expiry_date);
 
         if ($stmt->execute()) {
-           
+            echo <<<HTML
+            <script>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Coupon added successfully.'
+                });
+            </script>
+HTML;
         } else {
             echo "Error: " . $stmt->error;
         }
@@ -50,36 +61,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create']) ) {
     }
 }
 
-// Handle category deletion
+// Handle coupon deletion
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
-    if (isset($_POST['category_id'])) {
-        $category_id = $_POST['category_id'];
+    if (isset($_POST['coupon_id'])) {
+        $coupon_id = $_POST['coupon_id'];
 
-        $stmt = $conn->prepare("DELETE FROM category WHERE category_id = ?");
-        $stmt->bind_param("i", $category_id);
+        $stmt = $conn->prepare("DELETE FROM coupons WHERE id = ?");
+        $stmt->bind_param("i", $coupon_id);
 
         if ($stmt->execute()) {
             echo "<script>
                 Swal.fire({
                     title: 'Deleted!',
-                    text: 'Category deleted successfully.',
+                    text: 'Coupon deleted successfully.',
                     icon: 'success'
                 }).then(() => {
-                    window.location.href = 'product.php'; // Redirect to the product page
+                    window.location.href = 'coupons.php'; // Redirect to the coupons page
                 });
-            </>";
-            header('location:categories.php');
+            </script>";
         } else {
             echo "Error: " . $stmt->error;
         }
         $stmt->close();
     } else {
-        echo "Error: category_id not set.";
+        echo "Error: coupon_id not set.";
     }
 }
 
-// Fetch and display categories
-$sql = "SELECT * FROM category";
+// Fetch and display coupons
+$sql = "SELECT * FROM coupons";
 $result = $conn->query($sql);
 ?>
 
@@ -108,12 +118,8 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
         integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-
-<style>
+<STYLE>
 .button.create {
     border-radius: 20px;
     width: 14%;
@@ -125,7 +131,7 @@ $result = $conn->query($sql);
 .admin {
     color: #000;
 }
-</style>
+</STYLE>
 
 <body>
     <div class="grid-container">
@@ -174,28 +180,41 @@ $result = $conn->query($sql);
         </aside>
         <!-- End Sidebar -->
 
-        <div class="shadow" id="createForm" style="display:none;">
-            <!-- Form for creating a new category -->
+        <div class="shadow" id="createForm">
+            <!-- Form for creating a new coupon -->
             <form class="form" method="POST" enctype="multipart/form-data">
-                <span class="title">Add Category</span>
-
-
+                <span class="title">Add Coupon</span>
+                <input type="hidden" name="form_token"
+                    value="<?php //echo htmlspecialchars($_SESSION['form_token']); ?>">
                 <div class="input-container">
-                    <label style="color: #121212;" for="name_Category">Name</label>
-                    <input type="text" name="name_Category" required>
+                    <label style="color: #121212;" for="code">Code</label>
+                    <input type="text" name="code" required>
+                    <label style="color: #121212;" for="discount_id">Discount </label>
+                    <select
+                        style=" width:109% ; border: 1px solid #ddd; outline: none; padding: 12px 16px; background-color: rgb(247, 243, 243); border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: border-color 0.3s ease, box-shadow 0.3s ease;"
+                        name="discount_id" required>
+                        <?php
+                        $discount_query = "SELECT * FROM discount";
+                        $discount_result = $conn->query($discount_query);
+                        while ($discount_row = $discount_result->fetch_assoc()) {
+                            echo '<option value="' . $discount_row['discount_id'] . '">' . $discount_row['discount_amount'] . " %" . '</option>';
+                        }
+                        ?>
+                    </select>
+                    <label style="color: #121212;" for="expiry_date">Expiry Date</label>
+                    <input type="date" name="expiry_date" required>
                 </div>
-
-                <button style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add
-                    Category</button>
+                <button onclick="run()" style=" width: 100%; margin :0; " type="submit" name="create"
+                    class="button create">Add Coupon</button>
                 <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
 
         <!-- Main Content -->
         <main class="main-container">
-            <h2 style="color:#666666; text-align:center; font-weight: bold;">CATEGORIES</h2>
+            <h2 style="color:#666666; text-align:center; font-weight: bold;">Coupons</h2>
             <div style="justify-content: flex-end;" class="main-title">
-                <button id="Add_product" class="button create" onclick="toggleForm('createForm')">Add Category</button>
+                <button id="Add_coupon" class="button create" onclick="toggleForm('createForm')">Add Coupon</button>
             </div>
 
             <div class="table-container">
@@ -203,7 +222,9 @@ $result = $conn->query($sql);
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Discount ID</th>
+                            <th>Expiry Date</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -211,20 +232,22 @@ $result = $conn->query($sql);
                         <?php
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['category_id']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['name']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['id']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['code']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['discount_id']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['expiry_date']) . "</td>";
                             echo "<td>
                                 <form method='POST' style='display:inline'>
-                                    <input type='hidden' name='category_id' value='" . htmlspecialchars($row['category_id']) . "'>
-                                    <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-                                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
-                                            <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
-                                            <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
-                                        </svg>
-                                    </button>
+                                    <input type='hidden' name='coupon_id' value='" . htmlspecialchars($row['id']) . "'>
+                                        <button type='submit' name='delete' class='button delete' aria-label='Delete'>
+  <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
+    <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
+    <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
+  </svg>
+</button>
                                 </form>
-                                <a href='category_update.php?category_id=" . htmlspecialchars($row['category_id']) . "'>
-                                      <button type='submit' name='delete' class='button delete' aria-label='Delete'>
+                                <a href='coupons_update.php?id=" . htmlspecialchars($row['id']) . "'>
+                                     <button type='submit' name='delete' class='button delete' aria-label='Delete'>
   <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
 </button>
                                 </a>
@@ -241,9 +264,13 @@ $result = $conn->query($sql);
     <script>
     function toggleForm(id) {
         const form = document.getElementById(id);
-        const btn = document.getElementById("Add_product");
+        const btn = document.getElementById("Add_coupon");
         form.style.display = form.style.display === 'none' ? 'block' : 'none';
         btn.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function run() {
+        location.reload();
     }
     </script>
 </body>
