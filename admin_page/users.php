@@ -4,7 +4,7 @@ include 'config/connection.php';
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /ecommerce_group4-main/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -396,6 +396,7 @@ function roleyname($role_id)
     }
 
     .Cr-btn {
+        border: none;
         font-weight: bold;
         transition: 0.2s background;
         padding: 1em 1.8em;
@@ -449,29 +450,140 @@ function roleyname($role_id)
 
     .table-container td {
         border-bottom: solid #c3c3c3 1px;
-
+        padding-right: 1%;
         color: #000;
         background-color: #ffffff;
     }
 
-    /* ------------perfect css -------- */
 
-    /* .button.create {
+    /* ------------perfect css -------- */
+    .button {
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .button.create {
         border-radius: 20px;
         width: 14%;
         background-color: #007bff;
         color: white;
         margin-left: 22px;
-    } */
+    }
+
+    .button.create:hover {
+        background-color: #0056b3;
+        transform: scale(1.05);
+    }
+
+    .button.edit {
+        width: 70%;
+        background-color: #28a745;
+        color: white;
+    }
+
+    .button.edit:hover {
+        background-color: #218838;
+        transform: scale(1.05);
+    }
+
+    .shadow {
+        position: absolute;
+        left: 50%;
+        top: 5%;
+        transform: translate(-50%, 0);
+        display: none;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        width: 380px;
+        background-color: #fff;
+        border-radius: 15px;
+        padding: 30px 78px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .title {
+        color: black;
+        font-weight: bold;
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 10px;
+        margin-left: 10px;
+    }
+
+    .sub {
+        text-align: center;
+        color: black;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .sub a {
+        color: rgb(23, 111, 211);
+    }
+
+    .avatar {
+        height: 70px;
+        width: 70px;
+        background-color: rgb(23, 111, 211);
+        background-image: url('uploads/icon.png');
+        border-radius: 50%;
+        align-self: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .input-container {
+        position: relative;
+    }
+
+    .input-container input,
+    .input-container textarea,
+    button {
+        border: 1px solid #ddd;
+        outline: none;
+        width: 100%;
+        padding: 12px 16px;
+        background-color: rgb(247, 243, 243);
+        border-radius: 8px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .input-container textarea {
+        resize: vertical;
+    }
+
+    .input-container input:focus,
+    .input-container textarea:focus {
+        border-color: rgb(23, 111, 211);
+        box-shadow: 0 0 5px rgba(23, 111, 211, 0.5);
+    }
+
+    #file {
+        display: none;
+    }
+
+    .color_line {
+        color: #121212;
+    }
 
     .admin {
         color: #000;
     }
-    
-       * {
-            font-family: "Montserrat", sans-serif;
-
-        }
 </style>
 
 <body>
@@ -522,7 +634,7 @@ function roleyname($role_id)
         <div class="shadow" id="createForm">
             <!-- Form for creating a new user -->
             <form class="form" method="POST">
-                <span class="title"  style = " font-family:Montserrat, sans-serif;">Add User</span>
+                <span class="title">Add User</span>
 
                 <div class="input-container">
                     <label class="color_line" for="name">Name</label>
@@ -549,7 +661,7 @@ function roleyname($role_id)
                     <input type="password" name="con_password" placeholder="Confirm Password" required />
                 </div>
 
-                <button style="width: 100%; background:#007bff" type="submit" name="create" class="button">Create User</button>
+                <button style="width: 100%; background:#007bff ;color:#fff" type="submit" name="create" class="button">Create User</button>
                 <button style="border-radius: 5px; color: #000;  margin-left:1px;  background:rgb(247, 243, 243);  width: 100%;" type="button" class="Cr-btn"
                     onclick="toggleForm('createForm')">Close</button>
             </form>
@@ -559,7 +671,7 @@ function roleyname($role_id)
         <!-- Update User Form -->
         <div class="shadow" id="EditForm" style="display: none;">
             <form style="color:#000;" class="form" method="POST">
-                <span class="title" >Update User</span>
+                <span class="title">Update User</span>
 
                 <input type="hidden" name="user_id" value="<?php echo isset($user['user_id']) ? htmlspecialchars($user['user_id']) : ''; ?>" />
 
@@ -598,9 +710,9 @@ function roleyname($role_id)
 
         <!-- Main Content -->
         <main class="main-container">
-            <h2 style="color:#666666; text-align:center; font-weight: bold;">USERS</h2>
+            <h2 style="color:#666666; text-align:center; font-weight: bold;">CUSTOMERS</h2>
             <div style="justify-content: flex-end; padding-right: 1rem;" class="main-title">
-                <button id=" Add_user" class="Cr-btn" onclick="toggleForm('createForm')" style = " font-family:Montserrat, sans-serif;">Add User</button>
+                <button id=" Add_user" class="Cr-btn" onclick="toggleForm('createForm')">Add User</button>
             </div>
 
             <div class="table-container">

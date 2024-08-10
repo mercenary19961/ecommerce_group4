@@ -10,5 +10,5 @@ $_SESSION = array();
 session_destroy();
 
 // Redirect to index.php
-header("Location: /ecommerce_group4-main/login.php");
+header("Location: ../login.php");
 exit();

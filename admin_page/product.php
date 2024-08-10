@@ -4,7 +4,7 @@ include 'config/connection.php';
 
 // ------------Hello Admin---------------
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /ecommerce_group4-main/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -196,6 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
                     window.location.href = 'product.php';
                 });
             </script>";
+            header('location:product.php');
         } else {
             echo "Error: " . $stmt->error;
         }
@@ -230,6 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                 window.location.href = 'product.php'; // Redirect to the product page
             });
         </script>";
+        header('location:product.php');
     } else {
         echo "Error: " . $stmt->error;
     }
@@ -311,11 +313,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
             background: none;
         }
 
+
         .table-container th,
         .table-container td {
-            /* padding-top: 31px;
-            text-align: left;
-            padding-bottom: 31px; */
+            padding-right: 1%;
         }
 
         .table-container tr:nth-child(even) td {
@@ -353,7 +354,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
         /* css perfct */
 
 
-
+        .action {
+            display: flex;
+            gap: 10px;
+        }
 
 
 
@@ -492,11 +496,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 
         .admin {
             color: #000;
-        }
-        *
-        {
-            font-family: "Montserrat", sans-serif;
-
         }
     </style>
 
@@ -665,7 +664,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                 <button type="button" class="button close" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
+        <?php
 
+
+        ?>
         <!-- Update Product Form -->
         <div class="shadow" id="updateForm">
             <form class="form" method="POST" enctype="multipart/form-data" onsubmit="return validateImage()">
@@ -674,22 +676,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 
                 <div class="input-container">
                     <label class="color_line" for="name">Product Name</label>
-                    <input type="text" name="name" required />
+                    <input type="text" name="name" value="<?php echo htmlspecialchars($product['name']); ?>" required />
                 </div>
                 <div class="input-container">
                     <label for="description" class="color_line">Product Description</label>
-                    <textarea name="description" required></textarea>
+                    <textarea name="description" required>  <?php echo htmlspecialchars($product['description']); ?></textarea>
                 </div>
                 <div class="input-container">
                     <label for="price" class="color_line">Price</label>
-                    <input type="number" name="price" required />
+                    <input type="number" name="price" value="<?php echo htmlspecialchars($product['price']); ?> required />
                 </div>
-                <div class="input-container">
+                <div class=" input-container">
                     <label for="stock" class="color_line">Stock</label>
-                    <input type="number" name="stock" required />
+                    <input type="number" name="stock" value="<?php echo htmlspecialchars($product['stock']); ?> required />
                 </div>
-                <div class="input-container">
-                    <label for="category_id" class="color_line">Category ID</label>
+                <div class=" input-container">
+                    <label for="category_id" class="color_line">Category </label>
                     <select style=" width:109% ; border: 1px solid #ddd; outline: none; padding: 12px 16px; background-color: rgb(247, 243, 243); border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: border-color 0.3s ease, box-shadow 0.3s ease;" name="category_id" required>
                         <?php
                         $category_query = "SELECT * FROM category";
@@ -764,15 +766,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                             echo "<td><img src='images/" . htmlspecialchars($row['image']) . "' alt='Product Image' style='max-width: 100px;'></td>";
                             echo "<td>
                             <div>
+                            <div  class='action'>
                             <div class='left-Et'>
-                            <button type='button' class='Ed-btn' onclick=\"openUpdateForm('" . htmlspecialchars($row['product_id']) . "', '" . htmlspecialchars(addslashes($row['name'])) . "', '" . htmlspecialchars(addslashes($row['description'])) . "', '" . htmlspecialchars($row['price']) . "', '" . htmlspecialchars($row['stock']) . "', '" . htmlspecialchars($row['category_id']) . "')\">
+                             <a href=product_update.php?product_id=" . htmlspecialchars($row['product_id']) . "'>
+                            <button type='button' class='Ed-btn' >
                                <i class='fa-solid fa-pencil' style='color: #48b712; hight: 20px;'></i>
                             </button>
+                            </a>
                             </div>
                             <div class='rite-Dt'>
                                 <button type='button' class='del-btn' onclick=\"confirmDelete('" . htmlspecialchars($row['product_id']) . "')\">
                                      <i class='fa-solid fa-x' style='color: #ed2e0c;'></i>
                                 </button>
+                                </div>
                                 </div>
                             </td>";
                             echo "</tr>";
@@ -784,6 +790,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
         </main>
     </div>
 </body>
-
+<!-- onclick=\"openUpdateForm('" . htmlspecialchars($row['product_id']) . "', '" . htmlspecialchars(addslashes($row['name'])) . "', '" . htmlspecialchars(addslashes($row['description'])) . "', '" . htmlspecialchars($row['price']) . "', '" . htmlspecialchars($row['stock']) . "', '" . htmlspecialchars($row['category_id']) . "')\" -->
 
 </html>

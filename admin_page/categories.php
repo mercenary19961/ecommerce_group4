@@ -4,7 +4,7 @@ include 'config/connection.php';
 
 // ------------Hello Admin---------------
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /ecommerce_group4-main/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -271,10 +271,134 @@ $result_users = $conn->query($sql_users);
         .table-container tr:nth-child(even) td {
             background-color: #ffffff;
         }
-        *
-        {
-            font-family: "Montserrat", sans-serif;
 
+
+        .shadow {
+            position: absolute;
+            left: 50%;
+            top: 5%;
+            transform: translate(-50%, 0);
+            display: none;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 380px;
+            background-color: #fff;
+            border-radius: 15px;
+            padding: 30px 78px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .title {
+            color: black;
+            font-weight: bold;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 10px;
+            margin-left: 10px;
+        }
+
+        .sub {
+            text-align: center;
+            color: black;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .sub a {
+            color: rgb(23, 111, 211);
+        }
+
+        .avatar {
+            height: 70px;
+            width: 70px;
+            background-color: rgb(23, 111, 211);
+            background-image: url('uploads/icon.png');
+            border-radius: 50%;
+            align-self: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .input-container input,
+        .input-container textarea,
+        button {
+            border: 1px solid #ddd;
+            outline: none;
+            width: 100%;
+            padding: 12px 16px;
+            background-color: rgb(247, 243, 243);
+            border-radius: 8px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-container textarea {
+            resize: vertical;
+        }
+
+        .input-container input:focus,
+        .input-container textarea:focus {
+            border-color: rgb(23, 111, 211);
+            box-shadow: 0 0 5px rgba(23, 111, 211, 0.5);
+        }
+
+        #file {
+            display: none;
+        }
+
+        .color_line {
+            color: #121212;
+        }
+
+        .admin {
+            color: #000;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .button.create {
+            border-radius: 20px;
+            width: 14%;
+            background-color: #007bff;
+            color: white;
+            margin-left: 22px;
+        }
+
+        .button.create:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .button.edit {
+            width: 70%;
+            background-color: #28a745;
+            color: white;
+        }
+
+        .button.edit:hover {
+            background-color: #218838;
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -332,7 +456,7 @@ $result_users = $conn->query($sql_users);
                     <input type="text" name="name_Category" required>
                 </div>
 
-                <button style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add Category</button>
+                <button style="width: 100%; margin: 0;      color: #fff;    background-color: #007bff;    width: 100%;" type="submit" name="create">Add Category</button>
                 <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
@@ -359,7 +483,7 @@ $result_users = $conn->query($sql_users);
         <main class="main-container">
             <h2 style="color:#666666; text-align:center; font-weight: bold;">CATEGORIES</h2>
             <div style="justify-content: flex-end; padding-right:1rem;" class="main-title">
-                <button style="     border-radius: 20px;" id="Add_product" class="button create" onclick="toggleForm('createForm')">Add Category</button>
+                <button style="         padding: 12px;    width: 12%;    background-color: #007bff;    color: white;    margin-left: 17px;    border-radius: 20px;    border: none;" id="Add_product" class="button create" onclick="toggleForm('createForm')">Add Category</button>
             </div>
 
             <div class="table-container">
