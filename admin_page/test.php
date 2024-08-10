@@ -1,8 +1,11 @@
 <?php
 session_start();
 include 'config/connection.php';
+// include 'vendor/autoload.php'; // Make sure SweetAlert2 is included if using Composer
 
-// ------------Hello Admin---------------
+use SweetAlert\SweetAlert; // Assuming SweetAlert is used with Composer, adjust as needed
+
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: /ecommerce_group4-main/login.php");
     exit();
@@ -39,45 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     // Validate image
     $check = getimagesize($_FILES["image"]["tmp_name"]);
     if ($check === false) {
-        $check = getimagesize($_FILES["image"]["tmp_name"]);
-        if ($check === false) {
-            echo "<script>
-                alert('Error: File is not valid.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-
-
+        echo "<script>document.getElementById('alertimg').style.display = 'block';</script>";
         exit();
     }
 
     // Check file size (limit to 2MB)
     if ($_FILES["image"]["size"] > 2000000) {
-        $check = getimagesize($_FILES["image"]["tmp_name"]);
-        if ($check === false) {
-            echo "<script>
-                alert('Error: File is not valid.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-
+        echo "<script>document.getElementById('alertimg').style.display = 'block';</script>";
         exit();
     }
 
     // Allow certain file formats
     $allowed_types = array("jpg", "jpeg", "png", "gif");
     if (!in_array($image_file_type, $allowed_types)) {
-        $check = getimagesize($_FILES["image"]["tmp_name"]);
-        if ($check === false) {
-            echo "<script>
-                alert('Error: File is not valid.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-
+        echo "<script>document.getElementById('alertimg').style.display = 'block';</script>";
         exit();
     }
 
@@ -94,21 +72,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
                     title: 'Success!',
                     text: 'Product added successfully.'
                 });
+                setTimeout(function() { window.location.href = 'product.php'; }, 3000);
             </script>";
-            header('location:product.php');
         } else {
-            echo "Error: " . $stmt->error;
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Error: " . $stmt->error . "'
+                });
+            </script>";
         }
         $stmt->close();
     } else {
-        echo "<script>
-    alert('Error: File is not valid.');
-</script>";
+        echo "<script>document.getElementById('alertimg').style.display = 'block';</script>";
         exit();
     }
 }
 
-// Handle product deletion
+// Handle product deletion (Ensure this is wrapped in the appropriate condition, e.g., POST request)
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
     $product_id = $_POST['product_id'];
 
@@ -126,7 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
             });
         </script>";
     } else {
-        echo "Error: " . $stmt->error;
+        echo "<script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error: " . $stmt->error . "'
+            });
+        </script>";
     }
     $stmt->close();
 }
@@ -136,91 +124,6 @@ $sql = "SELECT * FROM products";
 $result = $conn->query($sql);
 ?>
 
-<?php
-// UpdateProduct
-// Check if product_id is provided in the URL
-
-// Handle product update
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
-    $product_id = $_GET['product_id']; // Assuming product_id is passed via GET parameter
-    $name = $_POST['name'];
-    $description = $_POST['description'];
-    $price = $_POST['price'];
-    $stock = $_POST['stock'];
-    $category_id = $_POST['category_id'];
-
-    // Check if a new image was uploaded
-    if (!empty($_FILES['image']['name'])) {
-        $target_dir = "images/";
-        $image_name = basename($_FILES["image"]["name"]);
-        $target_file = $target_dir . $image_name;
-        $image_file_type = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-        // Validate and move the uploaded image
-        $check = getimagesize($_FILES["image"]["tmp_name"]);
-        if ($check === false) {
-            echo "<script>
-                alert('Error: File is not valid.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-
-        // Check file size (limit to 2MB)
-        if ($_FILES["image"]["size"] > 2000000) {
-            echo "<script>
-                alert('Error: File is too large.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-
-        // Allow certain file formats
-        $allowed_types = array("jpg", "jpeg", "png", "gif");
-        if (!in_array($image_file_type, $allowed_types)) {
-            echo "<script>
-                alert('Error: Only JPG, JPEG, PNG & GIF files are allowed.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-
-        // Move the uploaded file to the target directory
-        if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-            // Update the product details including the new image
-            $stmt = $conn->prepare("UPDATE products SET name=?, description=?, price=?, stock=?, category_id=?, image=? WHERE product_id=?");
-            $stmt->bind_param("ssdiisi", $name, $description, $price, $stock, $category_id, $image_name, $product_id);
-        } else {
-            echo "<script>
-                alert('Error: Unable to upload image.');
-                window.location.href = 'product.php';
-            </script>";
-            exit();
-        }
-    } else {
-        // Update the product details without changing the image
-        $stmt = $conn->prepare("UPDATE products SET name=?, description=?, price=?, stock=?, category_id=? WHERE product_id=?");
-        $stmt->bind_param("ssdii", $name, $description, $price, $stock, $category_id, $product_id);
-    }
-
-    if ($stmt->execute()) {
-        echo "<script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Product updated successfully.'
-            }).then(() => {
-                window.location.href = 'product.php'; // Redirect to the product page
-            });
-        </script>";
-    } else {
-        echo "Error: " . $stmt->error;
-    }
-    $stmt->close();
-}
-
-
-?>
 
 
 
@@ -235,12 +138,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     <title>Admin Dashboard</title>
 
     <!-- font google icon  -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Montserrat Font -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
     <!-- Custom CSS -->
@@ -249,11 +149,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     <link rel="stylesheet" href="css/tables.css" />
     <!-- ----------------  font icon -------------- -->
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
+        /* alert for image  */
+        .alert {
+            padding: 20px;
+            background-color: #f44336;
+            color: white;
+        }
+
+        .closebtn {
+            margin-left: 15px;
+            color: white;
+            font-weight: bold;
+            float: right;
+            font-size: 22px;
+            line-height: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .closebtn:hover {
+            color: black;
+        }
+
+        /* -----end alert image ------- */
         body {
             background-color: #e6e8ed;
             color: #ffffff;
@@ -482,19 +403,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
                 <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
             </div>
             <ul class="sidebar-list">
-                <li class="sidebar-list-item"><a href="dashboard.php"><span
-                            class="material-icons-outlined">dashboard</span> Dashboard</a></li>
-                <li class="sidebar-list-item"><a href="product.php"><span
-                            class="material-icons-outlined">inventory_2</span> Products</a></li>
-                <li class="sidebar-list-item"><a href="categories.php"><span
-                            class="material-icons-outlined">category</span> Categories</a></li>
+                <li class="sidebar-list-item"><a href="dashboard.php"><span class="material-icons-outlined">dashboard</span> Dashboard</a></li>
+                <li class="sidebar-list-item"><a href="product.php"><span class="material-icons-outlined">inventory_2</span> Products</a></li>
+                <li class="sidebar-list-item"><a href="categories.php"><span class="material-icons-outlined">category</span> Categories</a></li>
                 <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span>
                         Customers</a></li>
-                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign"
-                            style="color: #ffffff;"></i>
+                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign" style="color: #ffffff;"></i>
                         Discount </a></li>
-                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent"
-                            style="color: #ffffff;"></i> Coupons </a></li>
+                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent" style="color: #ffffff;"></i> Coupons </a></li>
 
             </ul>
         </aside>
@@ -502,7 +418,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
 
         <div class="shadow" id="createForm">
             <!-- Form for creating a new product -->
-            <form class="form" method="POST" enctype="multipart/form-data">
+            <form id="imageUploadForm" class="form" method="POST" enctype="multipart/form-data">
                 <span class="title">Add product</span>
 
                 <div class="input-container">
@@ -544,75 +460,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
                 </div>
 
                 <div class="input-container">
-                    <label for="image" class="color_line">image </label>
-                    <input style="color:#121212" type="file" name="image" required />
+                    <label id="imageInput" for="image" class="color_line">image </label>
+                    <input style="color:#121212" type="file" name="image" accept="image/jpeg" required />
+                </div>
+                <div class="input-container">
+                    <div id="alretimge" class="alert" style="display: none;">
+                        <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+                        <strong>Danger!</strong> Indicates a dangerous or potentially negative action.
+                    </div>
+
                 </div>
                 <button style=" width: 100%; margin-left: 0px;" type="submit" name="create" class="button create">Add
                     Product</button>
                 <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
-        <!-- pop_update  -->
 
-        <div class="shadow" id="updateForm">
-            <!-- Form for creating a new product -->
-            <form class="form" method="POST" enctype="multipart/form-data">
-                <span class="title">Add product</span>
-
-                <div class="input-container">
-                    <input type="text" name="name" placeholder="Product Name" value="<?php echo htmlspecialchars($product['name']); ?>" required />
-                    <label for="name">Product Name</label>
-
-                </div>
-                <br>
-                <div class="input-container">
-                    <textarea name="description" placeholder="Product Description" required><?php echo htmlspecialchars($product['description']); ?></textarea>
-                    <label for="description">Product Description</label>
-                </div>
-                <div class="input-container">
-                    <input type="number" name="price" placeholder="Price" value="<?php echo htmlspecialchars($product['price']); ?>" required />
-                    <label for="price">Price</label>
-                </div>
-                <div class="input-container">
-                    <input type="number" name="stock" placeholder="Stock" value="<?php echo htmlspecialchars($product['stock']); ?>" required />
-                    <label for="stock">Stock</label>
-                </div>
-
-
-
-                <div class="input-container">
-                    <label for="category_id" class="color_line">Category ID </label>
-                    <br>
-                    <select style=" width:109% ;
-    border: 1px solid #ddd;
-    outline: none;
-
-    padding: 12px 16px;
-    background-color: rgb(247, 243, 243);
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;" name="category_id" required>
-                        <?php
-                        $category_query = "SELECT * FROM category";
-                        $category_result = $conn->query($category_query);
-                        while ($category_row = $category_result->fetch_assoc()) {
-                            echo '<option value="' . $category_row['category_id'] . '">' . $category_row['name'] . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-
-                <div class="input-container">
-                    <input type="file" name="image" />
-                    <label for="image">Product Image (leave blank to keep current)</label>
-                </div>
-                <button style=" width: 100%; margin-left: 0px;" type="submit" name="create" class="button create">Update
-                    Product</button>
-                <button type="button" class="button" onclick="toggleForm('updateForm')">Close</button>
-            </form>
-        </div>
-        <!-- END Popup_update -->
         <!-- Main Content -->
         <main class="main-container">
             <h2 style="color:#666666; text-align:center;    font-weight: bold;">PRODUCTS</h2>
@@ -672,16 +535,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
                             echo "<td>" . htmlspecialchars(categoryname($row['category_id'])) . "</td>";
                             echo "<td><img src='images/" . htmlspecialchars($row['image']) . "' alt='Product Image' style='max-width: 100px;'></td>";
                             echo "<td>
-        <form method='POST' style='display:inline'>
+        <form method='POST' style='display:inline' id='delete-form-" . htmlspecialchars($row['product_id']) . "'>
             <input type='hidden' name='product_id' value='" . htmlspecialchars($row['product_id']) . "'>
-           <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-  <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
-    <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
-    <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
-  </svg>
-</button>
+            <button type='button' name='delete' class='button delete' aria-label='Delete' onclick='confirmDelete(" . htmlspecialchars($row['product_id']) . ")'>
+                <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
+                    <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
+                    <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
+                </svg>
+            </button>
         </form>
-        <a href='product.php?product_id=" . htmlspecialchars($row['product_id']) . "'>
+        <a href='product_update.php?product_id=" . htmlspecialchars($row['product_id']) . "'>
             <button type='submit' name='delete' class='button delete' aria-label='Delete'>
   <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
 </button>
@@ -704,6 +567,95 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
             const btn = document.getElementById("Add_product");
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
             btn.style.display = form.style.display === 'none' ? 'block' : 'none';
+
+        }
+
+        function confirmDelete(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + productId).submit();
+                }
+            });
+        }
+        document.getElementById('imageUploadForm').addEventListener('submit', function(event) {
+            var imageInput = document.getElementById('imageInput');
+            var file = imageInput.files[0];
+            var errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = ''; // Clear any previous errors
+
+            // Check if a file is selected
+            if (!file) {
+                errorMsg.textContent = 'Please select an image file.';
+                event.preventDefault();
+                return;
+            }
+
+            // Validate file type (e.g., allow only JPEG, PNG, GIF)
+            var allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                errorMsg.textContent = 'Only JPEG, PNG, and GIF files are allowed.';
+                event.preventDefault();
+                return;
+            }
+
+            // Validate file size (e.g., limit to 2MB)
+            var maxSize = 2 * 1024 * 1024; // 2MB in bytes
+            if (file.size > maxSize) {
+                errorMsg.textContent = 'File size must be less than 2MB.';
+                event.preventDefault();
+                return;
+            }
+
+            // Validate image dimensions (optional)
+            var img = new Image();
+            img.onload = function() {
+                var width = img.width;
+                var height = img.height;
+
+                // Example: Ensure the image is at least 100x100 pixels
+                if (width < 100 || height < 100) {
+                    errorMsg.textContent = 'Image dimensions must be at least 100x100 pixels.';
+                    event.preventDefault();
+                    return;
+                }
+
+                // If all validations pass, submit the form
+                document.getElementById('imageUploadForm').submit();
+            };
+
+            img.onerror = function() {
+                errorMsg.textContent = 'Invalid image file.';
+                event.preventDefault();
+            };
+
+            // Read the image file as a data URL
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Prevent form submission until validation completes
+            event.preventDefault();
+        });
+
+
+        // alert image 
+        function alert() {
+            var alertimg = document.getElementById('alretimge');
+            alertimag.style = 'display:block;';
+
+
+
+
 
         }
     </script>

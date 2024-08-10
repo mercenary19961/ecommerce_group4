@@ -77,7 +77,6 @@ HTML;
                 });
                 </script>
 HTML;
-
             } else {
                 echo "Error: " . htmlspecialchars($stmt->error);
             }
@@ -148,7 +147,8 @@ $sql = "SELECT * FROM users";
 $result = $conn->query($sql);
 
 // Function to get role name
-function roleyname($role_id) {
+function roleyname($role_id)
+{
     global $conn;
 
     $sql = "SELECT role_name FROM roles WHERE role_id = ?";
@@ -164,6 +164,46 @@ function roleyname($role_id) {
     }
 
     return $role_name;
+}
+
+
+
+
+?>
+<?php
+// Handle updating the user
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
+    $user_id = $_POST['user_id'];
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
+    $phone = $_POST['phone'];
+    $password = $_POST['password'];
+    $con_password = $_POST['con_password'];
+
+    // Check if passwords match
+    if ($password !== $con_password) {
+        echo "<script>alert('Passwords do not match');</script>";
+    } else {
+        // Hash the password if it's provided
+        if (!empty($password)) {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $sql_update = "UPDATE users SET username = ?, email = ?, address = ?, phone = ?, password = ? WHERE user_id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param('sssssi', $name, $email, $address, $phone, $hashed_password, $user_id);
+        } else {
+            $sql_update = "UPDATE users SET username = ?, email = ?, address = ?, phone = ? WHERE user_id = ?";
+            $stmt_update = $conn->prepare($sql_update);
+            $stmt_update->bind_param('ssssi', $name, $email, $address, $phone, $user_id);
+        }
+
+        $stmt_update->execute();
+        $stmt_update->close();
+
+        // Redirect to the same page to reflect changes
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
+    }
 }
 ?>
 
@@ -194,17 +234,17 @@ function roleyname($role_id) {
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <style>
-.button.create {
-    border-radius: 20px;
-    width: 14%;
-    background-color: #007bff;
-    color: white;
-    margin-left: 22px;
-}
+    .button.create {
+        border-radius: 20px;
+        width: 14%;
+        background-color: #007bff;
+        color: white;
+        margin-left: 22px;
+    }
 
-.admin {
-    color: #000;
-}
+    .admin {
+        color: #000;
+    }
 </style>
 
 <body>
@@ -288,6 +328,47 @@ function roleyname($role_id) {
             </form>
         </div>
 
+        <!-- Start update_popup window  -->
+        <!-- Update User Form -->
+        <div class="shadow" id="EditForm" style="display: none;">
+            <form class="form" method="POST">
+                <span class="title">Update User</span>
+
+                <input type="hidden" name="user_id" value="<?php echo isset($user['user_id']) ? htmlspecialchars($user['user_id']) : ''; ?>" />
+
+                <div class="input-container">
+                    <input type="text" name="name" value="<?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?>" required />
+                    <label for="name">Full Name</label>
+                </div>
+                <div class="input-container">
+                    <input type="email" name="email" value="<?php echo isset($user['email']) ? htmlspecialchars($user['email']) : ''; ?>" required />
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-container">
+                    <input type="text" name="address" value="<?php echo isset($user['address']) ? htmlspecialchars($user['address']) : ''; ?>" required />
+                    <label for="address">Address</label>
+                </div>
+                <div class="input-container">
+                    <input type="tel" name="phone" value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>" required />
+                    <label for="phone">Phone</label>
+                </div>
+                <div class="input-container">
+                    <input type="password" name="password" />
+                    <label for="password">Password (Leave blank to keep current)</label>
+                </div>
+                <div class="input-container">
+                    <input type="password" name="con_password" />
+                    <label for="con_password">Confirm Password</label>
+                </div>
+
+                <button style="width: 22%;" type="submit" name="update" class="button create">Update User</button>
+                <button style=" background-color:#000" type="button" class="button" onclick="toggleForm('EditForm')">Close</button>
+            </form>
+        </div>
+
+
+        <!-- End  update_popup window -->
+
         <!-- Main Content -->
         <main class="main-container">
             <h2 style="color:#666666; text-align:center; font-weight: bold;">USERS</h2>
@@ -320,24 +401,17 @@ function roleyname($role_id) {
                             echo "<td>" . htmlspecialchars($row['address']) . "</td>";
 
                             echo "<td>
-        <form method='POST' style='display:inline'>
-            <input type='hidden' name='user_id' value='" . htmlspecialchars($row['user_id']) . "'>
-            <button style='background:none;' type='submit' name='delete' class='button delete' aria-label='Delete'>
-                <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
-                    <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
-                    <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
-                </svg>
-            </button>
+        <form method='POST' style='display: inline;'>
+            <input type='hidden' name='user_id' value='" . htmlspecialchars($row['user_id']) . "' />
+            <button class='button edit' type='button' onclick='editUser(" . htmlspecialchars(json_encode($row)) . ")'> <i class='fa-solid fa-edit' style='color: #ffffff;'></i></button>
+            <button class='button delete' type='submit' name='delete'>Delete</button>
         </form>
-        <a href='users_update.php?user_id=" . htmlspecialchars($row['user_id']) . "'>
-            <button type='button' class='button edit' aria-label='Edit'>
-                <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
-            </button>
-        </a>
+     
     </td>";
                             echo "</tr>";
                         }
                         ?>
+
                     </tbody>
                 </table>
             </div>
@@ -345,12 +419,31 @@ function roleyname($role_id) {
     </div>
 
     <script>
-    function toggleForm(id) {
-        const form = document.getElementById(id);
-        const btn = document.getElementById("Add_user");
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        btn.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
+        function toggleForm(id) {
+            const form = document.getElementById(id);
+            const btn = document.getElementById("Add_user");
+            const btnup = document.getElementById("edit_user");
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            btn.style.display = form.style.display === 'none' ? 'block' : 'none';
+            btnup.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleForm(formId) {
+            var form = document.getElementById(formId);
+            form.style.display = form.style.display === "block" ? "none" : "block";
+        }
+
+        function editUser(userData) {
+            var form = document.getElementById('EditForm');
+
+            form.querySelector('input[name="user_id"]').value = userData.user_id;
+            form.querySelector('input[name="name"]').value = userData.username;
+            form.querySelector('input[name="email"]').value = userData.email;
+            form.querySelector('input[name="address"]').value = userData.address;
+            form.querySelector('input[name="phone"]').value = userData.phone;
+
+            toggleForm('EditForm');
+        }
     </script>
 </body>
 

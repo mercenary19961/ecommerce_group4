@@ -19,11 +19,7 @@ $result_user = $stmt_user->get_result();
 $user = $result_user->fetch_assoc();
 
 // Handle creating a new discount
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create']) ) {
-    // Invalidate the token
-
-
-    // Retrieve discount details
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     $discount_amount = $_POST['discount_amount'];
 
     // Check if the discount amount already exists
@@ -81,7 +77,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                     text: 'Discount deleted successfully.',
                     icon: 'success'
                 }).then(() => {
-                    window.location.href = 'product.php'; // Redirect to the product page
+                    window.location.href = 'discount.php'; // Redirect to the discount page
+                });
+            </script>";
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    } else {
+        echo "Error: discount_id not set.";
+    }
+}
+
+// Handle updating the discount
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
+    if (isset($_POST['discount_id'])) {
+        $discount_id = $_POST['discount_id'];
+        $discount_amount = $_POST['discount_amount'];
+
+        // Update discount details in database
+        $stmt = $conn->prepare("UPDATE discount SET discount_amount = ? WHERE discount_id = ?");
+        $stmt->bind_param("si", $discount_amount, $discount_id);
+
+        if ($stmt->execute()) {
+            echo "<script>
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Discount updated successfully',
+                    icon: 'success'
+                }).then(() => {
+                    window.location.href = 'discount.php'; // Redirect to the discounts page
                 });
             </script>";
         } else {
@@ -97,7 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 $sql = "SELECT * FROM discount";
 $result = $conn->query($sql);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -105,14 +129,10 @@ $result = $conn->query($sql);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard</title>
-
     <!-- Font Google Icons -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Montserrat Font -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
     <!-- Custom CSS -->
@@ -120,46 +140,36 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/btinlogout.css" />
     <link rel="stylesheet" href="css/tables.css" />
     <!-- ----------------  font icon -------------- -->
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
-
 <style>
-.button.edit:hover {
-    background-color: #c6b8b8;
-    transform: scale(1.05);
-}
+    .button.edit:hover {
+        background-color: #c6b8b8;
+        transform: scale(1.05);
+    }
 
-.button.edit {
-    width: 19%;
-    color: white;
-    background-color: white;
+    .button.edit {
+        width: 19%;
+        color: white;
+        background-color: white;
+    }
 
-}
+    .button.delete {
+        width: 29%;
+        color: white;
+    }
 
+    .button.create {
+        border-radius: 20px;
+        width: 14%;
+        background-color: #007bff;
+        color: white;
+        margin-left: 22px;
+    }
 
-.button.delete {
-    width: 29%;
-
-    color: white;
-}
-
-.button.create {
-
-    border-radius: 20px;
-    width: 14%;
-    background-color: #007bff;
-    color: white;
-    margin-left: 22px;
-
-}
-
-.admin {
-    color: #000;
-}
+    .admin {
+        color: #000;
+    }
 </style>
 
 <body>
@@ -195,20 +205,12 @@ $result = $conn->query($sql);
                 <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
             </div>
             <ul class="sidebar-list">
-                <li class="sidebar-list-item"><a href="dashboard.php"><span
-                            class="material-icons-outlined">dashboard</span> Dashboard</a></li>
-                <li class="sidebar-list-item"><a href="product.php"><span
-                            class="material-icons-outlined">inventory_2</span> Products</a></li>
-                <li class="sidebar-list-item"><a href="categories.php"><span
-                            class="material-icons-outlined">category</span> Categories</a></li>
-                <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span>
-                        Customers</a></li>
-                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign"
-                            style="color: #ffffff;"></i>
-                        Discount </a></li>
-                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent"
-                            style="color: #ffffff;"></i> Coupons </a></li>
-
+                <li class="sidebar-list-item"><a href="dashboard.php"><span class="material-icons-outlined">dashboard</span> Dashboard</a></li>
+                <li class="sidebar-list-item"><a href="product.php"><span class="material-icons-outlined">inventory_2</span> Products</a></li>
+                <li class="sidebar-list-item"><a href="categories.php"><span class="material-icons-outlined">category</span> Categories</a></li>
+                <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span> Customers</a></li>
+                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign" style="color: #ffffff;"></i> Discount </a></li>
+                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent" style="color: #ffffff;"></i> Coupons </a></li>
             </ul>
         </aside>
         <!-- End Sidebar -->
@@ -217,19 +219,29 @@ $result = $conn->query($sql);
             <!-- Form for creating a new discount -->
             <form class="form" method="POST" enctype="multipart/form-data">
                 <span class="title">Add Discount</span>
-
-
-
                 <div class="input-container">
                     <label style="color: #121212;" for="discount_amount">Discount Amount</label>
                     <input type="number" name="discount_amount" required>
                 </div>
-
-                <button style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add
-                    Discount</button>
+                <button style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add Discount</button>
                 <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
+
+        <!-- --------- Start pop up update categories -------- -->
+        <div class="shadow" id="editForm" style="display:none;">
+            <form class="form" method="POST" enctype="multipart/form-data">
+                <span class="title">Update Discount</span>
+                <div class="input-container">
+                    <input type="number" name="discount_amount" placeholder="Discount Amount" value="<?php echo htmlspecialchars($discount['discount_amount']); ?>" required />
+                    <label for="discount_amount">Discount Amount</label>
+                    <input type="hidden" name="discount_id" id="editDiscountId">
+                </div>
+                <button style="width: 100%; margin: 0;" type="submit" name="update" class="button create">Update Discount</button>
+                <button type="button" class="button" onclick="toggleForm('editForm')">Close</button>
+            </form>
+        </div>
+        <!-- --------- End pop up update categories -------- -->
 
         <!-- Main Content -->
         <main class="main-container">
@@ -263,11 +275,9 @@ $result = $conn->query($sql);
                                         </svg>
                                     </button>
                                 </form>
-                                <a href='discount_update.php?discount_id=" . htmlspecialchars($row['discount_id']) . "'>
-                                    <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-  <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
-</button>
-                                </a>
+                                <button type='button' class='button edit' onclick='editDiscount(" . htmlspecialchars($row['discount_id']) . ", \"" . htmlspecialchars($row['discount_amount']) . "\")'>
+                                    <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
+                                </button>
                             </td>";
                             echo "</tr>";
                         }
@@ -279,12 +289,18 @@ $result = $conn->query($sql);
     </div>
 
     <script>
-    function toggleForm(id) {
-        const form = document.getElementById(id);
-        const btn = document.getElementById("Add_discount");
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        btn.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
+        function toggleForm(id) {
+            const form = document.getElementById(id);
+            const btn = document.getElementById("Add_discount");
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            btn.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function editDiscount(discountId, discountAmount) {
+            document.getElementById("editDiscountId").value = discountId;
+            document.querySelector("#editForm input[name='discount_amount']").value = discountAmount;
+            toggleForm('editForm');
+        }
     </script>
 </body>
 

@@ -17,6 +17,7 @@ if (isset($_POST['product_id'])) {
         $_SESSION['cart'][$product_id] = $quantity;
     }
 
+    // Calculate total quantity in cart
     $response['cartCount'] = array_sum($_SESSION['cart']);
 }
 

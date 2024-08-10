@@ -66,7 +66,7 @@ if (isset($_SESSION['cart'])) {
 
         .cart-indicator .badge {
             position: absolute;
-            top: -0.1px;
+            top: -20px !important;
             right: -5px;
         }
 
@@ -144,6 +144,7 @@ if (isset($_SESSION['cart'])) {
         .form-select {
             width: 100% !important;
         }
+
     </style>
 </head>
 <body>
@@ -157,7 +158,7 @@ if (isset($_SESSION['cart'])) {
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul id="navbar" class="navbar-nav text-uppercase justify-content-end align-items-center flex-grow-1 pe-3">
                         <li class="nav-item">
-                            <a class="nav-link me-4 active" href="#billboard">Home</a>
+                            <a class="nav-link me-4 active" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link me-4" href="products.php">Products</a>
@@ -174,7 +175,7 @@ if (isset($_SESSION['cart'])) {
                                 <i class="fas fa-shopping-cart"></i>
                                 <span class="icon-tooltip">Check the cart</span>
                                 <?php if ($total_quantity > 0): ?>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                <span class="position-absolute top-10 start-100 translate-middle badge rounded-pill bg-danger">
                                     <?php echo $total_quantity; ?>
                                 </span>
                                 <?php endif; ?>

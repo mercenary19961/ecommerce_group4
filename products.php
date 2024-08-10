@@ -71,19 +71,6 @@ $row = $count_result->fetch_assoc();
 $total_results = $row['count'];
 $total_pages = ceil($total_results / $results_per_page);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
-    $product_id = $_POST['product_id'];
-    $quantity = 1; // Default quantity to 1
-
-    if (isset($_SESSION['cart'][$product_id])) {
-        $_SESSION['cart'][$product_id] += $quantity;
-    } else {
-        $_SESSION['cart'][$product_id] = $quantity;
-    }
-    header("Location: products.php?page=$current_page&category=$category&price_min=$price_min&price_max=$price_max&in_stock=$in_stock&discount=$discount&search_term=$search_term");
-    exit();
-}
-
 include 'includes/header.php';
 ?>
 
@@ -171,9 +158,9 @@ include 'includes/header.php';
                         <div class="card_buttons">
                             <?php if ($row['stock'] > 0): ?>
                                 <a href="view_product.php?id=<?php echo $row['product_id']; ?>" class="btn btn-primary">Check Product</a>
-                                <form method="POST" action="products.php?page=<?php echo $current_page; ?>&category=<?php echo $category; ?>&price_min=<?php echo $price_min; ?>&price_max=<?php echo $price_max; ?>&in_stock=<?php echo $in_stock; ?>&discount=<?php echo $discount; ?>&search_term=<?php echo $search_term; ?>" class="d-inline">
+                                <form id="add-to-cart-form-<?php echo $row['product_id']; ?>" class="add-to-cart-form d-inline">
                                     <input type="hidden" name="product_id" value="<?php echo $row['product_id']; ?>">
-                                    <button type="submit" class="btn btn-secondary">Add to Cart</button>
+                                    <button type="button" class="btn btn-secondary add-to-cart-btn" data-product-id="<?php echo $row['product_id']; ?>">Add to Cart</button>
                                 </form>
                             <?php else: ?>
                                 <button class="btn btn-secondary" disabled>Out of Stock</button>
@@ -196,6 +183,45 @@ include 'includes/header.php';
 </main>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Attach event listeners to "Add to Cart" buttons
+        document.querySelectorAll('.add-to-cart-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'add_to_cart.php', true);
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.cartCount !== undefined) {
+                            // Update cart count badge
+                            const cartLink = document.querySelector('.fa-shopping-cart');
+                            let cartBadge = cartLink.parentNode.querySelector('.badge');
+
+                            if (cartBadge) {
+                                // Update existing badge count
+                                cartBadge.textContent = response.cartCount;
+                            } else {
+                                // Create a new badge if it doesn't exist
+                                cartBadge = document.createElement('span');
+                                cartBadge.className = 'badge rounded-pill bg-danger';
+                                cartBadge.style.position = 'absolute';
+                                cartBadge.style.top = '-0.1px';
+                                cartBadge.style.right = '-5px';
+                                cartBadge.textContent = response.cartCount;
+                                cartLink.parentNode.appendChild(cartBadge);
+                            }
+                        }
+                    }
+                };
+                xhr.send('product_id=' + productId);
+            });
+        });
+    });
+</script>
 
 <style>
     .pagination .page-item.active .page-link {

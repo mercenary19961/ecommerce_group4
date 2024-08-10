@@ -4,7 +4,7 @@ include 'config/connection.php';
 
 // ------------Hello Admin---------------
 if (!isset($_SESSION['user_id'])) {
-    header("Location: /ecommerce_group4-main/login.php");
+    header("Location: ../login.php");
     exit();
 }
 
@@ -19,7 +19,8 @@ $result_user = $stmt_user->get_result();
 $user = $result_user->fetch_assoc();
 
 // Function to count products
-function countProduct() {
+function countProduct()
+{
     global $conn;
     $sql = "SELECT COUNT(product_id) AS pr_number FROM products;";
     $result = $conn->query($sql);
@@ -34,7 +35,8 @@ function countProduct() {
 $printproduct = countProduct();
 
 // Function to count categories
-function countCate() {
+function countCate()
+{
     global $conn;
     $sql = "SELECT COUNT(category_id) AS ca_number FROM category;";
     $result = $conn->query($sql);
@@ -49,7 +51,8 @@ function countCate() {
 $printcat = countCate();
 
 // Function to count users
-function countUsers() {
+function countUsers()
+{
     global $conn;
     $sql = "SELECT COUNT(user_id) AS pr_number FROM users;";
     $result = $conn->query($sql);
@@ -64,7 +67,8 @@ function countUsers() {
 $printuser = countUsers();
 
 // Function to get total sales
-function total() {
+function total()
+{
     global $conn;
     $sql = "SELECT SUM(total) AS totalQ FROM orders;";
     $result = $conn->query($sql);
@@ -86,18 +90,14 @@ $printtotal = total();
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <title>Admin Dashboard</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/btinlogout.css" />
 
     <!-- ----------------  font icon -------------- -->
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -112,7 +112,7 @@ $printtotal = total();
             </div>
             <div class="header-right">
                 <span class="material-icons-outlined">
-                    <a href="logout.php" style="text-decoration: none;">
+                    <a href="../logout.php" style="text-decoration: none;">
                         <button class="btnlogout">LOGOUT
                             <div class="arrow-wrapper">
                                 <div class="arrow"></div>
@@ -131,19 +131,14 @@ $printtotal = total();
                 <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
             </div>
             <ul class="sidebar-list">
-                <li class="sidebar-list-item"><a href="dashboard.php"><span
-                            class="material-icons-outlined">dashboard</span> Dashboard</a></li>
-                <li class="sidebar-list-item"><a href="product.php"><span
-                            class="material-icons-outlined">inventory_2</span> Products</a></li>
-                <li class="sidebar-list-item"><a href="categories.php"><span
-                            class="material-icons-outlined">category</span> Categories</a></li>
+                <li class="sidebar-list-item"><a href="dashboard.php"><span class="material-icons-outlined">dashboard</span> Dashboard</a></li>
+                <li class="sidebar-list-item"><a href="product.php"><span class="material-icons-outlined">inventory_2</span> Products</a></li>
+                <li class="sidebar-list-item"><a href="categories.php"><span class="material-icons-outlined">category</span> Categories</a></li>
                 <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span>
                         Customers</a></li>
-                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign"
-                            style="color: #ffffff;"></i>
+                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign" style="color: #ffffff;"></i>
                         Discount </a></li>
-                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent"
-                            style="color: #ffffff;"></i> Coupons </a></li>
+                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent" style="color: #ffffff;"></i> Coupons </a></li>
 
             </ul>
         </aside>
@@ -177,8 +172,7 @@ $printtotal = total();
                 <div class="card">
                     <div class="card-inner">
                         <h3>TOTAL SALES</h3>
-                        <link rel="stylesheet"
-                            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+                        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
                         <span style="height: 50px;" class="material-symbols-outlined">equalizer</span>
                     </div>
                     <h1>$<?php echo number_format($printtotal); ?></h1>
@@ -186,8 +180,10 @@ $printtotal = total();
             </div>
             <div class="charts">
                 <div class="charts-card">
-                    <h2 class="chart-title">Top 5 Products</h2>
-                    <div id="bar-chart"></div>
+                    <h2 class="chart-title">Top Requested Products</h2>
+                    <?php include 'getProducts_API.php'; ?>
+                    <div> <?php echo $x; ?></div>
+                    <!-- <div id="bar-chart"></div> -->
                 </div>
                 <div class="charts-card">
                     <h2 class="chart-title"> Order Types Analysis</h2>

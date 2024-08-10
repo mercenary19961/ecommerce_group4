@@ -18,9 +18,8 @@ $stmt_user->execute();
 $result_user = $stmt_user->get_result();
 $user = $result_user->fetch_assoc();
 
-
 // Handle creating a new category
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create']) ) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
 
     // Retrieve category details
     $name_Category = $_POST['name_Category'];
@@ -34,15 +33,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create']) ) {
     $stmt->close();
 
     if ($count > 0) {
-        echo '<script>alert("You must enter a category name that does not exist ");</script>';
-
+        echo '<script>alert("You must enter a category name that does not exist.");</script>';
     } else {
-        // Insert category details into database
+        // Insert category details into the database
         $stmt = $conn->prepare("INSERT INTO category (name) VALUES (?)");
         $stmt->bind_param("s", $name_Category);
 
         if ($stmt->execute()) {
-           
+            echo '<script>
+                Swal.fire({
+                    title: "Success!",
+                    text: "Category added successfully.",
+                    icon: "success"
+                }).then(() => {
+                    window.location.href = "categories.php";
+                });
+            </script>';
         } else {
             echo "Error: " . $stmt->error;
         }
@@ -59,16 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
         $stmt->bind_param("i", $category_id);
 
         if ($stmt->execute()) {
-            echo "<script>
+            echo '<script>
                 Swal.fire({
-                    title: 'Deleted!',
-                    text: 'Category deleted successfully.',
-                    icon: 'success'
+                    title: "Deleted!",
+                    text: "Category deleted successfully.",
+                    icon: "success"
                 }).then(() => {
-                    window.location.href = 'product.php'; // Redirect to the product page
+                    window.location.href = "categories.php";
                 });
-            </>";
-            header('location:categories.php');
+            </script>';
         } else {
             echo "Error: " . $stmt->error;
         }
@@ -78,11 +83,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
     }
 }
 
+// Handle updating a category
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
+    $category_id = $_POST['category_id'];
+    $name_Category = $_POST['name_Category'];
+
+    // Update category details in database
+    $stmt = $conn->prepare("UPDATE category SET name = ? WHERE category_id = ?");
+    $stmt->bind_param("si", $name_Category, $category_id);
+
+    if ($stmt->execute()) {
+        echo '<script>
+            Swal.fire({
+                title: "Success!",
+                text: "Category updated successfully.",
+                icon: "success"
+            }).then(() => {
+                window.location.href = "categories.php";
+            });
+        </script>';
+    } else {
+        echo "Error: " . $stmt->error;
+    }
+    $stmt->close();
+}
+
 // Fetch and display categories
 $sql = "SELECT * FROM category";
 $result = $conn->query($sql);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -92,39 +121,33 @@ $result = $conn->query($sql);
     <title>Admin Dashboard</title>
 
     <!-- Font Google Icons -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     <!-- Montserrat Font -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/btinlogout.css" />
     <link rel="stylesheet" href="css/tables.css" />
-    <!-- ----------------  font icon -------------- -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <style>
-.button.create {
-    border-radius: 20px;
-    width: 14%;
-    background-color: #007bff;
-    color: white;
-    margin-left: 22px;
-}
+    .button.create {
+        border-radius: 20px;
+        width: 14%;
+        background-color: #007bff;
+        color: white;
+        margin-left: 22px;
+    }
 
-.admin {
-    color: #000;
-}
+    .admin {
+        color: #000;
+    }
 </style>
 
 <body>
@@ -135,16 +158,18 @@ $result = $conn->query($sql);
                 <span class="material-icons-outlined">menu</span>
             </div>
             <div class="header-left">
-                <h2 class="admin">Welcome , <?php echo htmlspecialchars($user['username']); ?></h2>
+                <h2 class="admin">Welcome, <?php echo htmlspecialchars($user['username']); ?></h2>
             </div>
             <div class="header-right">
                 <span class="material-icons-outlined">
-                    <a href="../login.php" style="text-decoration : none">
-                        <button class="btnlogout">LOGOUT<div class="arrow-wrapper">
+                    <a href="../login.php" style="text-decoration: none">
+                        <button class="btnlogout">LOGOUT
+                            <div class="arrow-wrapper">
                                 <div class="arrow"></div>
                             </div>
-                        </button></span>
-                </a></span>
+                        </button>
+                    </a>
+                </span>
             </div>
         </header>
         <!-- End Header -->
@@ -158,38 +183,48 @@ $result = $conn->query($sql);
                 <span class="material-icons-outlined" onclick="closeSidebar()">close</span>
             </div>
             <ul class="sidebar-list">
-                <li class="sidebar-list-item"><a href="dashboard.php"><span
-                            class="material-icons-outlined">dashboard</span> Dashboard</a></li>
-                <li class="sidebar-list-item"><a href="product.php"><span
-                            class="material-icons-outlined">inventory_2</span> Products</a></li>
-                <li class="sidebar-list-item"><a href="categories.php"><span
-                            class="material-icons-outlined">category</span> Categories</a></li>
-                <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span>
-                        Customers</a></li>
-                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign"
-                            style="color: #ffffff;"></i> Discount </a></li>
-                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent"
-                            style="color: #ffffff;"></i> Coupons </a></li>
+                <li class="sidebar-list-item"><a href="dashboard.php"><span class="material-icons-outlined">dashboard</span> Dashboard</a></li>
+                <li class="sidebar-list-item"><a href="product.php"><span class="material-icons-outlined">inventory_2</span> Products</a></li>
+                <li class="sidebar-list-item"><a href="categories.php"><span class="material-icons-outlined">category</span> Categories</a></li>
+                <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span> Customers</a></li>
+                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign" style="color: #ffffff;"></i> Discount </a></li>
+                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent" style="color: #ffffff;"></i> Coupons </a></li>
             </ul>
         </aside>
         <!-- End Sidebar -->
 
+        <!-- --------- Start pop up add categories -------- -->
         <div class="shadow" id="createForm" style="display:none;">
-            <!-- Form for creating a new category -->
             <form class="form" method="POST" enctype="multipart/form-data">
                 <span class="title">Add Category</span>
-
 
                 <div class="input-container">
                     <label style="color: #121212;" for="name_Category">Name</label>
                     <input type="text" name="name_Category" required>
                 </div>
 
-                <button style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add
-                    Category</button>
+                <button style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add Category</button>
                 <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
+        <!-- --------- End pop up add categories -------- -->
+
+        <!-- --------- Start pop up update categories -------- -->
+        <div class="shadow" id="editForm" style="display:none;">
+            <form class="form" method="POST" enctype="multipart/form-data">
+                <span class="title">Update Category</span>
+
+                <div class="input-container">
+                    <label style="color: #121212;" for="name_Category">Name</label>
+                    <input type="text" name="name_Category" id="editCategoryName" required>
+                    <input type="hidden" name="category_id" id="editCategoryId">
+                </div>
+
+                <button style="width: 100%; margin: 0;" type="submit" name="update" class="button create">Update Category</button>
+                <button type="button" class="button" onclick="toggleForm('editForm')">Close</button>
+            </form>
+        </div>
+        <!-- --------- End pop up update categories -------- -->
 
         <!-- Main Content -->
         <main class="main-container">
@@ -199,52 +234,58 @@ $result = $conn->query($sql);
             </div>
 
             <div class="table-container">
-                <table>
+                <table class="table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
+                            <th>Category ID</th>
+                            <th>Category Name</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['category_id']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['name']) . "</td>";
-                            echo "<td>
-                                <form method='POST' style='display:inline'>
-                                    <input type='hidden' name='category_id' value='" . htmlspecialchars($row['category_id']) . "'>
-                                    <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-                                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
-                                            <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
-                                            <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
-                                        </svg>
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr>
+                                <td>" . htmlspecialchars($row["category_id"]) . "</td>
+                                <td>" . htmlspecialchars($row["name"]) . "</td>
+                                <td>
+                                    <button class='button' onclick='editCategory(\"" . htmlspecialchars($row["category_id"]) . "\", \"" . htmlspecialchars($row["name"]) . "\")'>
+                                        <i class='fa-solid fa-pen'></i>
                                     </button>
-                                </form>
-                                <a href='category_update.php?category_id=" . htmlspecialchars($row['category_id']) . "'>
-                                      <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-  <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
-</button>
-                                </a>
-                            </td>";
-                            echo "</tr>";
+                                    <form method='POST' style='display:inline;'>
+                                        <input type='hidden' name='category_id' value='" . htmlspecialchars($row["category_id"]) . "'>
+                                        <button type='submit' name='delete' class='button'>
+                                            <i class='fa-solid fa-trash'></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='3'>No categories found.</td></tr>";
                         }
                         ?>
                     </tbody>
                 </table>
             </div>
         </main>
+        <!-- End Main Content -->
     </div>
 
+    <!-- Custom Scripts -->
+    <script src="js/scripts.js"></script>
     <script>
-    function toggleForm(id) {
-        const form = document.getElementById(id);
-        const btn = document.getElementById("Add_product");
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        btn.style.display = form.style.display === 'none' ? 'block' : 'none';
-    }
+        function editCategory(categoryId, categoryName) {
+            document.getElementById('editCategoryId').value = categoryId;
+            document.getElementById('editCategoryName').value = categoryName;
+            toggleForm('editForm');
+        }
+
+        function toggleForm(formId) {
+            const form = document.getElementById(formId);
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        }
     </script>
 </body>
 
