@@ -214,6 +214,9 @@ function display_products($category_id, $category_name) {
     .p-width {
         width: 200px;
     }
+    .hidden {
+        display: none;
+    }
     </style>
 </head>
 
@@ -614,52 +617,62 @@ function display_products($category_id, $category_name) {
     <script type="text/javascript" src="js/plugins.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script> // Sliders pagination dots script
-        document.addEventListener('DOMContentLoaded', function () {
-            var sliders = document.querySelectorAll('.product-swiper');
-            
-            sliders.forEach(function (slider) {
-                new Swiper(slider, {
-                    slidesPerView: 4, // Adjust as per your layout
-                    spaceBetween: 30,
-                    loop: true,
-                    pagination: {
-                        el: '.swiper-pagination',
-                        clickable: true,
-                    },
-                    navigation: {
-                        nextEl: '.swiper-arrow-next',
-                        prevEl: '.swiper-arrow-prev',
-                    },
-                });
+    <script>
+    // Sliders pagination dots script
+    document.addEventListener('DOMContentLoaded', function () {
+        var sliders = document.querySelectorAll('.product-swiper');
+        
+        sliders.forEach(function (slider) {
+            new Swiper(slider, {
+                slidesPerView: 4, // Adjust as per your layout
+                spaceBetween: 30,
+                loop: true,
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-arrow-next',
+                    prevEl: '.swiper-arrow-prev',
+                },
             });
         });
-    </script>
-    <script> // Fot adding products to cart 
-        $(document).ready(function() {
-            $('.add-to-cart').on('click', function() {
-                var productId = $(this).data('id');
-                $.ajax({
-                    url: 'add_to_cart.php',
-                    method: 'POST',
-                    data: {
-                        product_id: productId
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        // Update the cart count without refreshing the page
-                        if (response.cartCount !== undefined) {
-                            $('.badge').text(response.cartCount);
+    });
+
+    // For adding products to cart
+    $(document).ready(function() {
+        $('.add-to-cart').on('click', function() {
+            var productId = $(this).data('id');
+            $.ajax({
+                url: 'add_to_cart.php',
+                method: 'POST',
+                data: {
+                    product_id: productId
+                },
+                dataType: 'json',
+                success: function(response) {
+                    // Update the cart count badge directly after adding the item
+                    if (response.cartCount !== undefined) {
+                        var badge = $('.badge');
+                        badge.text(response.cartCount);
+                        if (response.cartCount > 0) {
+                            badge.removeClass('hidden');
+                        } else {
+                            badge.addClass('hidden');
                         }
-                        alert('Product added to cart. Cart count: ' + response.cartCount);
-                    },
-                    error: function() {
-                        alert('Failed to add product to cart.');
                     }
-                });
+                    // Trigger a full page refresh to ensure everything updates
+                    location.reload();
+                },
+                error: function() {
+                    alert('Failed to add product to cart.');
+                }
             });
         });
+    });
 </script>
+
+
 
 </body>
 

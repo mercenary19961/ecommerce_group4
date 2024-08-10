@@ -33,20 +33,83 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     $stmt->close();
 
     if ($count > 0) {
-        echo '<script>alert("You must enter a category name that does not exist.");</script>';
+        // Display an alert if the category already exists
+        echo '<script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
+                Swal.fire({
+                    title: "Oops...",
+                    text: "Error: Category name already exists.",
+                    icon: "error",
+                    confirmButtonText: "OK"
+                });
+            });
+        </script>';
     } else {
         // Insert category details into the database
         $stmt = $conn->prepare("INSERT INTO category (name) VALUES (?)");
         $stmt->bind_param("s", $name_Category);
 
         if ($stmt->execute()) {
-            echo '<script>
+            echo '<script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        title: "Success!",
+                        text: "Category added successfully.",
+                        icon: "success",
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        window.location.href = "categories.php";
+                    });
+                });
+            </script>';
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    }
+}
+
+// Handle updating a category
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
+    $category_id = $_POST['category_id'];
+    $name_Category = $_POST['name_Category'];
+
+    // Check if the updated category name already exists
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM category WHERE name = ? AND category_id != ?");
+    $stmt->bind_param("si", $name_Category, $category_id);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($count > 0) {
+        // Display an alert if the category already exists
+        echo '<script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
                 Swal.fire({
-                    title: "Success!",
-                    text: "Category added successfully.",
-                    icon: "success"
-                }).then(() => {
-                    window.location.href = "categories.php";
+                    title: "Oops...",
+                    text: "Error: Category name already exists.",
+                    icon: "error",
+                    confirmButtonText: "OK"
+                });
+            });
+        </script>';
+    } else {
+        // Update category details in the database
+        $stmt = $conn->prepare("UPDATE category SET name = ? WHERE category_id = ?");
+        $stmt->bind_param("si", $name_Category, $category_id);
+
+        if ($stmt->execute()) {
+            echo '<script type="text/javascript">
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        title: "Success!",
+                        text: "Category updated successfully.",
+                        icon: "success",
+                        confirmButtonText: "OK"
+                    }).then(() => {
+                        window.location.href = "categories.php";
+                    });
                 });
             </script>';
         } else {
@@ -57,49 +120,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
 }
 
 // Handle category deletion
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
-    if (isset($_POST['category_id'])) {
-        $category_id = $_POST['category_id'];
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
+    $category_id = $_POST['category_id'];
 
-        $stmt = $conn->prepare("DELETE FROM category WHERE category_id = ?");
-        $stmt->bind_param("i", $category_id);
+    $stmt = $conn->prepare("DELETE FROM category WHERE category_id = ?");
+    $stmt->bind_param("i", $category_id);
 
-        if ($stmt->execute()) {
-            echo '<script>
+    if ($stmt->execute()) {
+        echo '<script type="text/javascript">
+            document.addEventListener("DOMContentLoaded", function() {
                 Swal.fire({
                     title: "Deleted!",
                     text: "Category deleted successfully.",
-                    icon: "success"
+                    icon: "success",
+                    confirmButtonText: "OK"
                 }).then(() => {
                     window.location.href = "categories.php";
                 });
-            </script>';
-        } else {
-            echo "Error: " . $stmt->error;
-        }
-        $stmt->close();
-    } else {
-        echo "Error: category_id not set.";
-    }
-}
-
-// Handle updating a category
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
-    $category_id = $_POST['category_id'];
-    $name_Category = $_POST['name_Category'];
-
-    // Update category details in database
-    $stmt = $conn->prepare("UPDATE category SET name = ? WHERE category_id = ?");
-    $stmt->bind_param("si", $name_Category, $category_id);
-
-    if ($stmt->execute()) {
-        echo '<script>
-            Swal.fire({
-                title: "Success!",
-                text: "Category updated successfully.",
-                icon: "success"
-            }).then(() => {
-                window.location.href = "categories.php";
             });
         </script>';
     } else {
@@ -108,10 +145,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     $stmt->close();
 }
 
-// Fetch and display categories
-$sql = "SELECT * FROM category";
-$result = $conn->query($sql);
+// Fetch and display categories and users
+$sql_categories = "SELECT * FROM category";
+$result_categories = $conn->query($sql_categories);
+
+$sql_users = "SELECT * FROM users";
+$result_users = $conn->query($sql_users);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -134,21 +175,109 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .btn-narrow-confirm,
+        .btn-narrow-cancel {
+            min-width: 100px;
+            /* Adjust this value for the desired button width */
+            font-size: 16px;
+            padding: 8px 24px;
+        }
+
+        /* You can still adjust the width of the entire popup */
+        .swal2-wide {
+            width: 400px !important;
+            /* Adjust the width to match your needs */
+        }
+
+
+        /* -----------------   perfect css------------ */
+        .btnlogout {
+            --primary-color: #007bff;
+            --secondary-color: #fff;
+            --hover-color: #10539b;
+            --arrow-width: 10px;
+            --arrow-stroke: 2px;
+            box-sizing: border-box;
+            border: 0;
+            border-radius: 20px;
+            color: var(--secondary-color);
+            padding: 1em 1.8em;
+            background: var(--primary-color);
+            display: flex;
+            transition: 0.2s background;
+            align-items: center;
+            gap: 0.6em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .Cr-btn {
+            font-weight: bold;
+            transition: 0.2s background;
+            padding: 1em 1.8em;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 14%;
+            background-color: #007bff;
+            color: white;
+            margin-left: 22px;
+        }
+
+        .Cr-btn:hover {
+            background: #10539b;
+        }
+
+        .Ed-btn {
+            cursor: pointer;
+            font-size: large;
+            border: none;
+            padding: 1px;
+            height: 50%;
+            width: 20%;
+            background: none;
+        }
+
+        .Ed-btn:hover {
+            transition: hight 2s;
+
+        }
+
+        .del-btn {
+            cursor: pointer;
+            font-size: large;
+            border: none;
+            padding: 1px;
+            height: 50%;
+            width: 20%;
+            background: none;
+        }
+
+        .table-container td {
+            border-bottom: solid #c3c3c3 1px;
+            padding-right: 27%;
+            color: #000;
+            background-color: #ffffff;
+        }
+
+        .table-container th,
+        .table-container td {
+            padding-top: 31px;
+            text-align: left;
+            padding-bottom: 31px;
+        }
+
+        .table-container tr:nth-child(even) td {
+            background-color: #ffffff;
+        }
+        *
+        {
+            font-family: "Montserrat", sans-serif;
+
+        }
+    </style>
 </head>
-
-<style>
-    .button.create {
-        border-radius: 20px;
-        width: 14%;
-        background-color: #007bff;
-        color: white;
-        margin-left: 22px;
-    }
-
-    .admin {
-        color: #000;
-    }
-</style>
 
 <body>
     <div class="grid-container">
@@ -229,8 +358,8 @@ $result = $conn->query($sql);
         <!-- Main Content -->
         <main class="main-container">
             <h2 style="color:#666666; text-align:center; font-weight: bold;">CATEGORIES</h2>
-            <div style="justify-content: flex-end;" class="main-title">
-                <button id="Add_product" class="button create" onclick="toggleForm('createForm')">Add Category</button>
+            <div style="justify-content: flex-end; padding-right:1rem;" class="main-title">
+                <button style="     border-radius: 20px;" id="Add_product" class="button create" onclick="toggleForm('createForm')">Add Category</button>
             </div>
 
             <div class="table-container">
@@ -244,23 +373,29 @@ $result = $conn->query($sql);
                     </thead>
                     <tbody>
                         <?php
-                        if ($result->num_rows > 0) {
-                            while ($row = $result->fetch_assoc()) {
+                        if ($result_categories->num_rows > 0) {
+
+                            while ($row = $result_categories->fetch_assoc()) {
                                 echo "<tr>
-                                <td>" . htmlspecialchars($row["category_id"]) . "</td>
-                                <td>" . htmlspecialchars($row["name"]) . "</td>
-                                <td>
-                                    <button class='button' onclick='editCategory(\"" . htmlspecialchars($row["category_id"]) . "\", \"" . htmlspecialchars($row["name"]) . "\")'>
-                                        <i class='fa-solid fa-pen'></i>
-                                    </button>
-                                    <form method='POST' style='display:inline;'>
-                                        <input type='hidden' name='category_id' value='" . htmlspecialchars($row["category_id"]) . "'>
-                                        <button type='submit' name='delete' class='button'>
-                                            <i class='fa-solid fa-trash'></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>";
+                                    <td>" . htmlspecialchars($row["category_id"]) . "</td>
+                                    <td>" . htmlspecialchars($row["name"]) . "</td>
+                                    <td>
+                                        <div style='display: flex; gap: 40px;'>
+                                            <!-- Edit Button -->
+                                            <button class='Ed-btn' onclick='editCategory(\"" . htmlspecialchars($row["category_id"]) . "\", \"" . htmlspecialchars($row["name"]) . "\")'>
+                                                <i class='fa-solid fa-pencil' style='color: #48b712; height: 20px;'></i>
+                                            </button>
+                                            
+                                            <!-- Delete Form and Button -->
+                                            <form id='deleteForm" . htmlspecialchars($row["category_id"]) . "' method='POST' style='display: inline;'>
+                                                <input type='hidden' name='category_id' value='" . htmlspecialchars($row["category_id"]) . "'>
+                                                <button type='button' class='del-btn' onclick='confirmDelete(\"category\", \"" . htmlspecialchars($row["category_id"]) . "\")'>
+                                                    <i class='fa-solid fa-x' style='color: #ed2e0c; height: 20px;'></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>";
                             }
                         } else {
                             echo "<tr><td colspan='3'>No categories found.</td></tr>";
@@ -269,6 +404,8 @@ $result = $conn->query($sql);
                     </tbody>
                 </table>
             </div>
+
+
         </main>
         <!-- End Main Content -->
     </div>
@@ -285,6 +422,35 @@ $result = $conn->query($sql);
         function toggleForm(formId) {
             const form = document.getElementById(formId);
             form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+        }
+
+        function confirmDelete(entityType, entityId) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: `Do you really want to delete this ${entityType}?`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "Cancel",
+                customClass: {
+                    popup: "swal2-wide",
+                    confirmButton: "btn-narrow-confirm",
+                    cancelButton: "btn-narrow-cancel"
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Add hidden input for confirm_delete
+                    var confirmDeleteInput = document.createElement('input');
+                    confirmDeleteInput.type = 'hidden';
+                    confirmDeleteInput.name = 'confirm_delete';
+                    confirmDeleteInput.value = 'true';
+                    document.getElementById("deleteForm" + entityId).appendChild(confirmDeleteInput);
+
+                    document.getElementById("deleteForm" + entityId).submit();
+                }
+            });
         }
     </script>
 </body>

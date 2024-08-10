@@ -18,6 +18,9 @@ $stmt_user->execute();
 $result_user = $stmt_user->get_result();
 $user = $result_user->fetch_assoc();
 
+// Initialize a variable to hold the status message
+$status_message = "";
+
 // Handle creating a new discount
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     $discount_amount = $_POST['discount_amount'];
@@ -31,30 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     $stmt->close();
 
     if ($count > 0) {
-        echo <<<HTML
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Discount already exists.'
-            });
-        </script>
-HTML;
+        $status_message = "exists";
     } else {
         // Insert discount details into database
         $stmt = $conn->prepare("INSERT INTO discount (discount_amount) VALUES (?)");
         $stmt->bind_param("s", $discount_amount);
 
         if ($stmt->execute()) {
-            echo <<<HTML
-            <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Discount added successfully.'
-                });
-            </script>
-HTML;
+            $status_message = "success";
         } else {
             echo "Error: " . $stmt->error;
         }
@@ -95,24 +82,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
         $discount_id = $_POST['discount_id'];
         $discount_amount = $_POST['discount_amount'];
 
-        // Update discount details in database
-        $stmt = $conn->prepare("UPDATE discount SET discount_amount = ? WHERE discount_id = ?");
-        $stmt->bind_param("si", $discount_amount, $discount_id);
-
-        if ($stmt->execute()) {
-            echo "<script>
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Discount updated successfully',
-                    icon: 'success'
-                }).then(() => {
-                    window.location.href = 'discount.php'; // Redirect to the discounts page
-                });
-            </script>";
-        } else {
-            echo "Error: " . $stmt->error;
-        }
+        // Check if the new discount amount already exists
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM discount WHERE discount_amount = ?");
+        $stmt->bind_param("s", $discount_amount);
+        $stmt->execute();
+        $stmt->bind_result($count);
+        $stmt->fetch();
         $stmt->close();
+
+        if ($count > 0) {
+            $status_message = "exists";
+        } else {
+            // Update discount details in database
+            $stmt = $conn->prepare("UPDATE discount SET discount_amount = ? WHERE discount_id = ?");
+            $stmt->bind_param("si", $discount_amount, $discount_id);
+
+            if ($stmt->execute()) {
+                $status_message = "success";
+            } else {
+                echo "Error: " . $stmt->error;
+            }
+            $stmt->close();
+        }
     } else {
         echo "Error: discount_id not set.";
     }
@@ -122,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
 $sql = "SELECT * FROM discount";
 $result = $conn->query($sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -141,36 +133,138 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/tables.css" />
     <!-- ----------------  font icon -------------- -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        .btnlogout {
+            --primary-color: #007bff;
+            --secondary-color: #fff;
+            --hover-color: #10539b;
+            --arrow-width: 10px;
+            --arrow-stroke: 2px;
+            box-sizing: border-box;
+            border: 0;
+            border-radius: 20px;
+            color: var(--secondary-color);
+            padding: 1em 1.8em;
+            background: var(--primary-color);
+            display: flex;
+            transition: 0.2s background;
+            align-items: center;
+            gap: 0.6em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .Cr-btn {
+            font-weight: bold;
+            transition: 0.2s background;
+            padding: 1em 1.8em;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 14%;
+            background-color: #007bff;
+            color: white;
+            margin-left: 22px;
+        }
+
+        .Cr-btn:hover {
+            background: #10539b;
+        }
+
+        .Ed-btn {
+            cursor: pointer;
+            font-size: large;
+            border: none;
+            padding: 1px;
+            height: 50%;
+            width: 20%;
+            background: none;
+        }
+
+        .Ed-btn:hover {
+            transition: hight 2s;
+
+        }
+
+        .del-btn {
+            cursor: pointer;
+            font-size: large;
+            border: none;
+            padding: 1px;
+            height: 50%;
+            width: 20%;
+            background: none;
+        }
+
+        .table-container td {
+            border-bottom: solid #c3c3c3 1px;
+            padding-right: 27%;
+            color: #000;
+            background-color: #ffffff;
+        }
+
+        .table-container th,
+        .table-container td {
+            padding-top: 31px;
+            text-align: left;
+            padding-bottom: 31px;
+        }
+
+        .table-container tr:nth-child(even) td {
+            background-color: #ffffff;
+        }
+
+        /* -------------css perfct------- */
+        .admin {
+            color: #000;
+        }
+
+        .swal-wide {
+            width: 400px !important;
+        }
+
+        .btn-confirm-delete {
+            border: 2px solid #d33 !important;
+            /* Red border */
+            background-color: #d33 !important;
+            /* Red background */
+            color: white !important;
+            /* White text color */
+        }
+
+        .btn-cancel {
+            border: 2px solid #3085d6 !important;
+            /* Blue border */
+            background-color: #3085d6 !important;
+            /* Blue background */
+            color: white !important;
+            /* White text color */
+        }
+
+        .btn-confirm-delete {
+            border: 2px solid #d33 !important;
+            /* Red border */
+            background-color: #d33 !important;
+            /* Red background */
+            color: white !important;
+            /* White text color */
+        }
+
+        .btn-cancel {
+            border: 2px solid #3085d6 !important;
+            /* Blue border */
+            background-color: #3085d6 !important;
+            /* Blue background */
+            color: white !important;
+            /* White text color */
+        }
+        *
+        {
+            font-family: "Montserrat", sans-serif;
+
+        }
+    </style>
 </head>
-<style>
-    .button.edit:hover {
-        background-color: #c6b8b8;
-        transform: scale(1.05);
-    }
-
-    .button.edit {
-        width: 19%;
-        color: white;
-        background-color: white;
-    }
-
-    .button.delete {
-        width: 29%;
-        color: white;
-    }
-
-    .button.create {
-        border-radius: 20px;
-        width: 14%;
-        background-color: #007bff;
-        color: white;
-        margin-left: 22px;
-    }
-
-    .admin {
-        color: #000;
-    }
-</style>
 
 <body>
     <div class="grid-container">
@@ -233,8 +327,8 @@ $result = $conn->query($sql);
             <form class="form" method="POST" enctype="multipart/form-data">
                 <span class="title">Update Discount</span>
                 <div class="input-container">
+                    <label style="color:#000" for="discount_amount">Discount Amount</label>
                     <input type="number" name="discount_amount" placeholder="Discount Amount" value="<?php echo htmlspecialchars($discount['discount_amount']); ?>" required />
-                    <label for="discount_amount">Discount Amount</label>
                     <input type="hidden" name="discount_id" id="editDiscountId">
                 </div>
                 <button style="width: 100%; margin: 0;" type="submit" name="update" class="button create">Update Discount</button>
@@ -246,8 +340,8 @@ $result = $conn->query($sql);
         <!-- Main Content -->
         <main class="main-container">
             <h2 style="color:#666666; text-align:center; font-weight: bold;">DISCOUNTS</h2>
-            <div style="justify-content: flex-end;" class="main-title">
-                <button id="Add_discount" class="button create" onclick="toggleForm('createForm')">Add Discount</button>
+            <div style="justify-content: flex-end ; padding-right: 1rem;" class="main-title">
+                <button id="Add_discount" class="Cr-btn" onclick="toggleForm('createForm')">Add Discount</button>
             </div>
 
             <div class="table-container">
@@ -264,19 +358,14 @@ $result = $conn->query($sql);
                         while ($row = $result->fetch_assoc()) {
                             echo "<tr>";
                             echo "<td>" . htmlspecialchars($row['discount_id']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['discount_amount']) . "</td>";
+                            echo "<td>" . htmlspecialchars($row['discount_amount']) . "%" . "</td>";
                             echo "<td>
-                                <form method='POST' style='display:inline'>
-                                    <input type='hidden' name='discount_id' value='" . htmlspecialchars($row['discount_id']) . "'>
-                                    <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-                                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 48 48' role='img'>
-                                            <path fill='#F44336' d='M21.5 4.5H26.501V43.5H21.5z' transform='rotate(45.001 24 24)'></path>
-                                            <path fill='#F44336' d='M21.5 4.5H26.5V43.501H21.5z' transform='rotate(135.008 24 24)'></path>
-                                        </svg>
-                                    </button>
-                                </form>
-                                <button type='button' class='button edit' onclick='editDiscount(" . htmlspecialchars($row['discount_id']) . ", \"" . htmlspecialchars($row['discount_amount']) . "\")'>
-                                    <i class='fa-solid fa-pencil' style='color: #48b712;'></i>
+                            <button type='button' class='Ed-btn' onclick='editDiscount(" . htmlspecialchars($row['discount_id']) . ", \"" . htmlspecialchars($row['discount_amount']) . "\")'>
+                                <i class='fa-solid fa-pencil' style='color: #48b712; hight: 20px;'></i>
+                            </button>
+                          
+                                <button type='button' class='del-btn' onclick='confirmDelete(" . htmlspecialchars($row['discount_id']) . ")' aria-label='Delete'>
+                                   <i class='fa-solid fa-x' style='color: #ed2e0c;'></i>
                                 </button>
                             </td>";
                             echo "</tr>";
@@ -301,6 +390,70 @@ $result = $conn->query($sql);
             document.querySelector("#editForm input[name='discount_amount']").value = discountAmount;
             toggleForm('editForm');
         }
+
+        function confirmDelete(discountId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you really want to delete this discount?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    confirmButton: 'btn-confirm-delete', // Apply custom class for further styling
+                    cancelButton: 'btn-cancel'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create a form and submit it to delete the discount
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = ''; // Leave action blank to submit to the same page
+
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'discount_id';
+                    input.value = discountId;
+
+                    const deleteInput = document.createElement('input');
+                    deleteInput.type = 'hidden';
+                    deleteInput.name = 'delete';
+                    deleteInput.value = 'true';
+
+                    form.appendChild(input);
+                    form.appendChild(deleteInput);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        <?php
+        if ($status_message === "exists") {
+            echo "Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Error: Discount already exists.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6C63FF',
+                iconHtml: '<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"80\" height=\"80\" viewBox=\"0 0 48 48\" role=\"img\"><path fill=\"#F44336\" d=\"M21.5 4.5H26.501V43.5H21.5z\" transform=\"rotate(45.001 24 24)\"></path><path fill=\"#F44336\" d=\"M21.5 4.5H26.5V43.501H21.5z\" transform=\"rotate(135.008 24 24)\"></path></svg>',
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            });";
+        } elseif ($status_message === "success") {
+            echo "Swal.fire({
+                title: 'Success!',
+                text: 'Discount updated successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6C63FF',
+                customClass: {
+                    popup: 'swal-wide'
+                }
+            });";
+        }
+        ?>
     </script>
 </body>
 

@@ -73,6 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         unset($_SESSION['coupon_discount']);
         unset($_SESSION['coupon_code']);
     }
+
+    // Redirect to the cart page to prevent form resubmission
+    header('Location: cart.php');
+    exit();
 }
 
 // Fetch cart items from the session
@@ -253,7 +257,7 @@ include 'includes/header.php';
                     <a href="credit_card_payment.php" class="btn btn-secondary">Pay with Credit</a>
                 </div>
                 <div class="right-align">
-                    <a href="<?php echo $_SESSION['previous_page']; ?>" class="btn btn-secondary">Back</a>
+                    <a href="products.php" class="btn btn-secondary">Back</a>
                 </div>
             </div>
             <form method="post" action="cart.php" class="coupon_form">

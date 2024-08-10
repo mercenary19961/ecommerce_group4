@@ -19,6 +19,8 @@ $result_user = $stmt_user->get_result();
 $user = $result_user->fetch_assoc();
 
 // Handle creating a new coupon
+$alertMessage = '';
+$alertType = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     // Retrieve coupon details
     $code = $_POST['code'];
@@ -34,40 +36,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
     $stmt->close();
 
     if ($count > 0) {
-        echo "<script type='text/javascript'>
-        document.addEventListener('DOMContentLoaded', function(event) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Error: Coupon already exists.',
-            });
-        });
-        </script>";
+        $alertMessage = 'Coupon code already exists.';
+        $alertType = 'error';
     } else {
-        // Insert coupon details into database
+        // Insert coupon details into the database
         $stmt = $conn->prepare("INSERT INTO coupons (code, discount_id, expiry_date) VALUES (?, ?, ?)");
         $stmt->bind_param("sis", $code, $discount_id, $expiry_date);
-    
+
         if ($stmt->execute()) {
-            echo <<<HTML
-            <script type='text/javascript'>
-            document.addEventListener('DOMContentLoaded', function(event) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    text: 'Coupon added successfully.',
-                }).then(() => {
-                    window.location.reload();
-                });
-            });
-            </script>
-    HTML;
+            $alertMessage = 'Coupon added successfully.';
+            $alertType = 'success';
         } else {
-            echo "Error: " . $stmt->error;
+            $alertMessage = 'Error: ' . $stmt->error;
+            $alertType = 'error';
         }
         $stmt->close();
     }
 }
+
 // Handle coupon update
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     $coupon_id = $_POST['coupon_id'];
@@ -75,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     $discount_id = $_POST['discount_id'];
     $expiry_date = $_POST['expiry_date'];
 
-    // Check if the coupon code already exists for another coupon
+    // Check if the new coupon code already exists in another record
     $stmt = $conn->prepare("SELECT COUNT(*) FROM coupons WHERE code = ? AND id != ?");
     $stmt->bind_param("si", $code, $coupon_id);
     $stmt->execute();
@@ -84,44 +70,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
     $stmt->close();
 
     if ($count > 0) {
-        echo "<script type='text/javascript'>
-        document.addEventListener('DOMContentLoaded', function(event) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Error: Coupon code already exists for another coupon.',
-            });
-        });
-        </script>";
+        $alertMessage = 'Coupon code already exists.';
+        $alertType = 'error';
     } else {
-        // Update the coupon if the code is unique
+        // Update coupon details in the database
         $stmt = $conn->prepare("UPDATE coupons SET code = ?, discount_id = ?, expiry_date = ? WHERE id = ?");
         $stmt->bind_param("sisi", $code, $discount_id, $expiry_date, $coupon_id);
 
         if ($stmt->execute()) {
-            echo <<<HTML
-            <script>
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Updated',
-                    text: 'Coupon updated successfully.'
-                }).then(() => {
-                    window.location.reload();
-                });
-            </script>
-HTML;
+            $alertMessage = 'Coupon updated successfully.';
+            $alertType = 'success';
         } else {
-            echo "Error: " . $stmt->error;
+            $alertMessage = 'Error: ' . $stmt->error;
+            $alertType = 'error';
         }
         $stmt->close();
     }
 }
+
 // Handle coupon deletion
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
     if (isset($_POST['coupon_id'])) {
         $coupon_id = $_POST['coupon_id'];
 
         $stmt = $conn->prepare("DELETE FROM coupons WHERE id = ?");
+        if ($stmt === false) {
+            die('Prepare failed: ' . htmlspecialchars($conn->error));
+        }
         $stmt->bind_param("i", $coupon_id);
 
         if ($stmt->execute()) {
@@ -129,13 +104,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                 Swal.fire({
                     title: 'Deleted!',
                     text: 'Coupon deleted successfully.',
-                    icon: 'success'
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6'
                 }).then(() => {
-                    window.location.reload();
+                    window.location.href = 'coupons.php'; // Redirect after deletion
                 });
             </script>";
         } else {
-            echo "Error: " . $stmt->error;
+            echo "Error: " . htmlspecialchars($stmt->error);
         }
         $stmt->close();
     } else {
@@ -146,6 +122,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 // Fetch and display coupons
 $sql = "SELECT * FROM coupons";
 $result = $conn->query($sql);
+
+
+
+
+function Discount_amount($role_id)
+{
+    global $conn;
+
+    $sql = "SELECT discount_amount	FROM discount WHERE discount_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $role_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $role_name = '';
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $role_name = $row['discount_amount'];
+    }
+    //
+    return $role_name;
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -166,39 +165,106 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="css/styles.css" />
     <link rel="stylesheet" href="css/btinlogout.css" />
     <link rel="stylesheet" href="css/tables.css" />
-    <!-- SweetAlert -->
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- ----------------  font icon -------------- -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" crossorigin="anonymous" />
+
+    <style>
+        .btn-wide {
+            width: 100%;
+            padding: 10px;
+        }
+
+
+        /* perfect style  */
+
+
+        .btnlogout {
+            --primary-color: #007bff;
+            --secondary-color: #fff;
+            --hover-color: #10539b;
+            --arrow-width: 10px;
+            --arrow-stroke: 2px;
+            box-sizing: border-box;
+            border: 0;
+            border-radius: 20px;
+            color: var(--secondary-color);
+            padding: 1em 1.8em;
+            background: var(--primary-color);
+            display: flex;
+            transition: 0.2s background;
+            align-items: center;
+            gap: 0.6em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .Cr-btn {
+            font-weight: bold;
+            transition: 0.2s background;
+            padding: 1em 1.8em;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 14%;
+            background-color: #007bff;
+            color: white;
+            margin-left: 22px;
+        }
+
+        .Cr-btn:hover {
+            background: #10539b;
+        }
+
+        .Ed-btn {
+            cursor: pointer;
+            font-size: large;
+            border: none;
+            padding: 1px;
+            height: 50%;
+            width: 20%;
+            background: none;
+        }
+
+        .Ed-btn:hover {
+            transition: hight 2s;
+
+        }
+
+        .del-btn {
+            cursor: pointer;
+            font-size: large;
+            border: none;
+            padding: 1px;
+            height: 50%;
+            width: 20%;
+            background: none;
+        }
+
+        .table-container td {
+            border-bottom: solid #c3c3c3 1px;
+
+            color: #000;
+            background-color: #ffffff;
+        }
+
+        .table-container th,
+        .table-container td {
+            padding-top: 31px;
+            text-align: left;
+            padding-bottom: 31px;
+        }
+
+        .table-container tr:nth-child(even) td {
+            background-color: #ffffff;
+        }
+        *
+        {
+            font-family: "Montserrat", sans-serif;
+
+        }
+    </style>
 </head>
-
-<STYLE>
-    .button.create {
-        border-radius: 20px;
-        width: 14%;
-        background-color: #007bff;
-        color: white;
-        margin-left: 22px;
-    }
-
-    .button.edit {
-        border-radius: 20px;
-        width: 14%;
-        background-color: #28a745;
-        color: white;
-    }
-
-    .button.delete {
-        border-radius: 20px;
-        width: 14%;
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .admin {
-        color: #000;
-    }
-</STYLE>
 
 <body>
     <div class="grid-container">
@@ -237,8 +303,8 @@ $result = $conn->query($sql);
                 <li class="sidebar-list-item"><a href="product.php"><span class="material-icons-outlined">inventory_2</span> Products</a></li>
                 <li class="sidebar-list-item"><a href="categories.php"><span class="material-icons-outlined">category</span> Categories</a></li>
                 <li class="sidebar-list-item"><a href="users.php"><span class="material-icons-outlined">groups</span> Customers</a></li>
-                <li class="sidebar-list-item"><a href="discount.php"> <i class="fa-solid fa-colon-sign" style="color: #ffffff;"></i> Discount </a></li>
-                <li class="sidebar-list-item"><a href="coupons.php"> <i class="fa-solid fa-percent" style="color: #ffffff;"></i> Coupons </a></li>
+                <li class="sidebar-list-item"><a href="discount.php"><i class="fa-solid fa-colon-sign" style="color: #ffffff;"></i> Discount</a></li>
+                <li class="sidebar-list-item"><a href="coupons.php"><i class="fa-solid fa-percent" style="color: #ffffff;"></i> Coupons</a></li>
             </ul>
         </aside>
         <!-- End Sidebar -->
@@ -252,7 +318,7 @@ $result = $conn->query($sql);
                 <div class="input-container">
                     <label style="color: #121212;" for="code">Code</label>
                     <input type="text" name="code" required>
-                    <label style="color: #121212;" for="discount_id">Discount </label>
+                    <label style="color: #121212;" for="discount_id">Discount</label>
                     <select style="width: 109%; border: 1px solid #ddd; outline: none; padding: 12px 16px; background-color: rgb(247, 243, 243); border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: border-color 0.3s ease, box-shadow 0.3s ease;" name="discount_id" required>
                         <?php
                         $discount_query = "SELECT * FROM discount";
@@ -267,7 +333,7 @@ $result = $conn->query($sql);
                 <div class="input-container">
                     <input type="date" name="expiry_date" required>
                 </div>
-                <button onclick="run()" style="width: 100%; margin: 0;" type="submit" name="create" class="button create">Add Coupon</button>
+                <button style="width: 100%; margin: 0; " type="submit" name="create" class="button create">Add Coupon</button>
                 <button type="button" class="button" onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
@@ -284,7 +350,7 @@ $result = $conn->query($sql);
                     <label for="code">Coupon Code</label>
                 </div>
                 <div class="input-container">
-                    <label style="color: #121212;" for="discount_id">Discount </label>
+                    <label style="color: #121212;" for="discount_id">Discount</label>
                     <select style="width: 109%; border: 1px solid #ddd; outline: none; padding: 12px 16px; background-color: rgb(247, 243, 243); border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: border-color 0.3s ease, box-shadow 0.3s ease;" name="discount_id" id="edit_discount_id" required>
                         <?php
                         $discount_query = "SELECT * FROM discount";
@@ -296,7 +362,7 @@ $result = $conn->query($sql);
                     </select>
                 </div>
                 <div class="input-container">
-                    <input style="color: white;" type="date" name="expiry_date" id="edit_expiry_date" placeholder="Expiry Date" required />
+                    <input type="date" name="expiry_date" id="edit_expiry_date" placeholder="Expiry Date" required />
                     <label for="expiry_date">Expiry Date</label>
                 </div>
                 <button style="width: 100%; margin: 0;" type="submit" name="update" class="button create">Update Coupon</button>
@@ -308,8 +374,8 @@ $result = $conn->query($sql);
         <!-- Main Content -->
         <main class="main-container">
             <h2 style="color:#666666; text-align:center; font-weight: bold;">Coupons</h2>
-            <div style="justify-content: flex-end;" class="main-title">
-                <button id="Add_coupon" class="button create" onclick="toggleForm('createForm')">Add Coupon</button>
+            <div style="justify-content: flex-end; padding-right:1rem;" class="main-title">
+                <button style="     border-radius: 20px;" id="Add_coupon" class="button create" onclick="toggleForm('createForm')">Add Coupon</button>
             </div>
 
             <div class="table-container">
@@ -318,7 +384,7 @@ $result = $conn->query($sql);
                         <tr>
                             <th>ID</th>
                             <th>Code</th>
-                            <th>Discount ID</th>
+                            <th>Discount </th>
                             <th>Expiry Date</th>
                             <th>Actions</th>
                         </tr>
@@ -329,16 +395,16 @@ $result = $conn->query($sql);
                             echo "<tr>";
                             echo "<td>" . htmlspecialchars($row['id']) . "</td>";
                             echo "<td>" . htmlspecialchars($row['code']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['discount_id']) . "</td>";
+                            echo "<td>" . htmlspecialchars(Discount_amount($row['discount_id'])) . "%" . "</td>";
                             echo "<td>" . htmlspecialchars($row['expiry_date']) . "</td>";
                             echo "<td>
-                                <form method='POST' style='display:inline'>
+                                <form method='POST' style='display:inline' onsubmit='return confirmDelete(this);'>
                                     <input type='hidden' name='coupon_id' value='" . htmlspecialchars($row['id']) . "'>
-                                    <button type='button' class='button edit' onclick='editCoupon(" . htmlspecialchars($row['id']) . ", \"" . htmlspecialchars($row['code']) . "\", " . htmlspecialchars($row['discount_id']) . ", \"" . htmlspecialchars($row['expiry_date']) . "\")'>
-                                        <i class='fa-solid fa-edit' style='color: #ffffff;'></i>
+                                    <button type='button' class='Ed-btn' onclick='editCoupon(" . htmlspecialchars($row['id']) . ", \"" . htmlspecialchars($row['code']) . "\", " . htmlspecialchars($row['discount_id']) . ", \"" . htmlspecialchars($row['expiry_date']) . "\")'>
+                                           <i class='fa-solid fa-pencil' style='color: #48b712; hight: 20px;'></i>
                                     </button>
-                                    <button type='submit' name='delete' class='button delete' aria-label='Delete'>
-                                        <i class='fa-solid fa-trash' style='color: #ffffff;'></i>
+                                    <button type='submit' name='delete' class='del-btn' aria-label='Delete'>
+                                       <i class='fa-solid fa-x' style='color: #ed2e0c;'></i>
                                     </button>
                                 </form>
                             </td>";
@@ -350,6 +416,18 @@ $result = $conn->query($sql);
             </div>
         </main>
     </div>
+
+    <?php if ($alertMessage): ?>
+        <script>
+            Swal.fire({
+                icon: '<?php echo $alertType; ?>',
+                title: '<?php echo $alertType === 'success' ? 'Success' : 'Oops...'; ?>',
+                text: '<?php echo $alertMessage; ?>',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '<?php echo $alertType === 'success' ? '#3085d6' : '#6a5acd'; ?>'
+            });
+        </script>
+    <?php endif; ?>
 
     <script>
         function toggleForm(id) {
@@ -367,8 +445,29 @@ $result = $conn->query($sql);
             toggleForm('editForm');
         }
 
-        function run() {
-            location.reload();
+        function confirmDelete(form) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you really want to delete this coupon?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Add hidden input for confirm_delete
+                    var confirmDeleteInput = document.createElement('input');
+                    confirmDeleteInput.type = 'hidden';
+                    confirmDeleteInput.name = 'confirm_delete';
+                    confirmDeleteInput.value = 'true';
+                    form.appendChild(confirmDeleteInput);
+
+                    form.submit(); // Submit the form if the user confirms the deletion
+                }
+            });
+            return false; // Prevent the form from submitting immediately
         }
     </script>
 </body>

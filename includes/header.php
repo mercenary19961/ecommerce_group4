@@ -66,9 +66,27 @@ if (isset($_SESSION['cart'])) {
 
         .cart-indicator .badge {
             position: absolute;
-            top: -20px !important;
+            top: -5px !important;
             right: -5px;
         }
+
+        .icon-wrapper .badge {
+    position: absolute;
+    top: 1px; /* Adjust this to position vertically */
+    right: -5px; /* Adjust this to position horizontally */
+    width: 20px; /* Ensure this value is equal to the height */
+    height: 20px; /* Ensure this value is equal to the width */
+    line-height: 20px; /* This should match the height for vertical centering */
+    text-align: center; /* Center the number horizontally */
+    border-radius: 50%; /* Makes the badge a perfect circle */
+    background-color: #dc3545; /* Bootstrap danger color, you can customize it */
+    color: white; /* Text color */
+    font-size: 12px; /* Adjust the font size as needed */
+    font-weight: bold; /* Make the text bold */
+    display: flex; /* Use flexbox to center the text */
+    align-items: center; /* Center text vertically */
+    justify-content: center; /* Center text horizontally */
+}
 
         .card_buttons {
             display: flex;
@@ -175,7 +193,7 @@ if (isset($_SESSION['cart'])) {
                                 <i class="fas fa-shopping-cart"></i>
                                 <span class="icon-tooltip">Check the cart</span>
                                 <?php if ($total_quantity > 0): ?>
-                                <span class="position-absolute top-10 start-100 translate-middle badge rounded-pill bg-danger">
+                                <span class="position-absolute start-100 translate-middle badge rounded-pill bg-danger">
                                     <?php echo $total_quantity; ?>
                                 </span>
                                 <?php endif; ?>

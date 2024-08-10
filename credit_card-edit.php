@@ -191,7 +191,7 @@ include 'includes/header.php';
                         <input type="text" name="cvv" value="<?php echo htmlspecialchars($user['cvv'] ?? ''); ?>" placeholder="CVV">
                         <div class="button-group">
                             <button class="update_btn" type="submit">Update</button>
-                            <a href="javascript:history.back()" class="btn btn-secondary back">Back</a>
+                            <a href="cart.php" class="btn btn-secondary back">Back</a>
                         </div>
                     </form>
                     <?php if (!empty($_SESSION['cart']) && $user): ?>

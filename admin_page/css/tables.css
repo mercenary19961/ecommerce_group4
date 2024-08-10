@@ -20,6 +20,7 @@ body {
 
 .table-container th,
 .table-container td {
+  padding-right: 18%;
   padding: 10px;
   text-align: left;
 }
@@ -30,26 +31,27 @@ body {
 }
 
 .table-container td {
+  padding-right: 18%;
   color: #000;
   background-color: #ffffff;
 }
 
 .table-container tr:nth-child(even) td {
-  background-color: #f5f0f0;
+  background-color: #ffff;
 }
 
 .table-container img {
   max-width: 100px;
 }
 
-.button {
+/* .button {
   padding: 10px 20px;
   border: none;
   cursor: pointer;
   font-size: 16px;
   border-radius: 5px;
   transition: background-color 0.3s ease, transform 0.3s ease;
-}
+} */
 
 .button.create {
   width: 14%;
@@ -149,7 +151,7 @@ body {
   position: relative;
 }
 
-.input-container input,
+/* .input-container input,
 .input-container textarea,
 button {
   border: 1px solid #ddd;
@@ -157,10 +159,10 @@ button {
   width: 100%;
   padding: 12px 16px;
   background-color: rgb(247, 243, 243);
-  border-radius: 8px;
+  border-radius: 8px; */
   /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
+  /* transition: border-color 0.3s ease, box-shadow 0.3s ease;
+} */
 
 .input-container textarea {
   resize: vertical;

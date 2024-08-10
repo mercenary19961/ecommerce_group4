@@ -121,14 +121,10 @@ include 'includes/header.php';
             <div class="col-md-6 product-details">
                 <div class="button-group">
                     <h1><?php echo htmlspecialchars($product['name']); ?></h1>
-                    <form method="post" action="cart.php">
-                        <input type="hidden" name="product_id" value="<?php echo $product_id; ?>">
-                        <input type="hidden" name="action" value="add">
-                        <button type="submit" class="btn btn-primary">Add to Cart</button>
-                    </form>
+                    <button class="btn btn-primary add-to-cart-btn" data-product-id="<?php echo $product_id; ?>">Add to Cart</button>
                 </div>
                 <p><strong>Price:</strong> $<?php echo number_format($product['price'], 2); ?></p>
-                <p><strong>Name:</strong> <?php echo htmlspecialchars($product['description']); ?></p>
+                <p><strong>Description:</strong> <?php echo htmlspecialchars($product['description']); ?></p>
                 <p><strong>Category:</strong> <?php echo htmlspecialchars($product['category_name']); ?></p>
                 <p><strong>Stock:</strong> <?php echo htmlspecialchars($product['stock']); ?></p>
                 <a href="javascript:history.back()" class="btn btn-secondary">Back</a>
@@ -166,3 +162,40 @@ include 'includes/header.php';
 </html>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+    // Attach event listener to "Add to Cart" button
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('.add-to-cart-btn').addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'add_to_cart.php', true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.cartCount !== undefined) {
+                        // Update cart count badge
+                        const cartLink = document.querySelector('.fa-shopping-cart');
+                        let cartBadge = cartLink.parentNode.querySelector('.badge');
+
+                        if (cartBadge) {
+                            // Update existing badge count
+                            cartBadge.textContent = response.cartCount;
+                        } else {
+                            // Create a new badge if it doesn't exist
+                            cartBadge = document.createElement('span');
+                            cartBadge.className = 'badge rounded-pill bg-danger';
+                            cartBadge.style.position = 'absolute';
+                            cartBadge.style.top = '-5px';
+                            cartBadge.style.right = '-5px';
+                            cartBadge.textContent = response.cartCount;
+                            cartLink.parentNode.appendChild(cartBadge);
+                        }
+                    }
+                }
+            };
+            xhr.send('product_id=' + productId);
+        });
+    });
+</script>

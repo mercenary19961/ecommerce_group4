@@ -44,9 +44,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['create'])) {
             <script>
             document.addEventListener('DOMContentLoaded', function () {
                 Swal.fire({
-                    title: 'Error!',
-                    text: 'Email already exists.',
-                    icon: 'error'
+                    title: 'Oops...',
+                    text: 'Error: Email already exists.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6C63FF',
+                    iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 48 48" role="img"><path fill="#F44336" d="M21.5 4.5H26.501V43.5H21.5z" transform="rotate(45.001 24 24)"></path><path fill="#F44336" d="M21.5 4.5H26.5V43.501H21.5z" transform="rotate(135.008 24 24)"></path></svg>',
+                    customClass: {
+                        popup: 'swal-wide',
+                        icon: 'custom-icon',
+                        title: 'custom-title',
+                        text: 'custom-text',
+                        confirmButton: 'custom-confirm-button'
+                    }
                 });
             });
             </script>
@@ -70,7 +80,9 @@ HTML;
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
-                        text: 'User registered successfully.'
+                        text: 'User registered successfully.',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
                     }).then(() => {
                         window.location.href = 'users.php'; // Redirect to the users page
                     });
@@ -87,9 +99,19 @@ HTML;
             <script>
             document.addEventListener('DOMContentLoaded', function () {
                 Swal.fire({
-                    title: 'Error!',
+                    title: 'Oops...',
                     text: 'Passwords do not match.',
-                    icon: 'error'
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6C63FF',
+                    iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 48 48" role="img"><path fill="#F44336" d="M21.5 4.5H26.501V43.5H21.5z" transform="rotate(45.001 24 24)"></path><path fill="#F44336" d="M21.5 4.5H26.5V43.501H21.5z" transform="rotate(135.008 24 24)"></path></svg>',
+                    customClass: {
+                        popup: 'swal-wide',
+                        icon: 'custom-icon',
+                        title: 'custom-title',
+                        text: 'custom-text',
+                        confirmButton: 'custom-confirm-button'
+                    }
                 });
             });
             </script>
@@ -101,9 +123,19 @@ HTML;
         <script>
         document.addEventListener('DOMContentLoaded', function () {
             Swal.fire({
-                title: 'Error!',
+                title: 'Oops...',
                 text: 'Required fields are missing.',
-                icon: 'error'
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6C63FF',
+                iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 48 48" role="img"><path fill="#F44336" d="M21.5 4.5H26.501V43.5H21.5z" transform="rotate(45.001 24 24)"></path><path fill="#F44336" d="M21.5 4.5H26.5V43.501H21.5z" transform="rotate(135.008 24 24)"></path></svg>',
+                customClass: {
+                    popup: 'swal-wide',
+                    icon: 'custom-icon',
+                    title: 'custom-title',
+                    text: 'custom-text',
+                    confirmButton: 'custom-confirm-button'
+                }
             });
         });
         </script>
@@ -113,6 +145,49 @@ HTML;
 
 // Handle user deletion
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
+    $user_id = $_POST['user_id'];
+
+    echo <<<HTML
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to delete this user?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '';
+
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'user_id';
+                input.value = '$user_id';
+
+                var deleteInput = document.createElement('input');
+                deleteInput.type = 'hidden';
+                deleteInput.name = 'confirm_delete';
+                deleteInput.value = 'true';
+
+                form.appendChild(input);
+                form.appendChild(deleteInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    });
+    </script>
+HTML;
+}
+
+// Handle confirmed deletion
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_delete'])) {
     $user_id = $_POST['user_id'];
 
     $stmt = $conn->prepare("DELETE FROM users WHERE user_id = ?");
@@ -129,7 +204,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
             Swal.fire({
                 title: 'Deleted!',
                 text: 'User deleted successfully.',
-                icon: 'success'
+                icon: 'success',
+                confirmButtonColor: '#3085d6',
+                confirmButtonText: 'OK'
             }).then(() => {
                 window.location.href = 'users.php'; // Redirect to the users page
             });
@@ -142,11 +219,114 @@ HTML;
     $stmt->close();
 }
 
+// Handle user update
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
+    $user_id = $_POST['user_id'];
+    $name = $_POST['name'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
+    $phone = $_POST['phone'];
+    $password = $_POST['password'];
+    $con_password = $_POST['con_password'];
+
+    // Check if email already exists for a different user
+    $stmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE email = ? AND user_id != ?");
+    $stmt->bind_param("si", $email, $user_id);
+    $stmt->execute();
+    $stmt->bind_result($count);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($count > 0) {
+        echo <<<HTML
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+        <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Oops...',
+                text: 'Error: Email already exists.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#6C63FF',
+                iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 48 48" role="img"><path fill="#F44336" d="M21.5 4.5H26.501V43.5H21.5z" transform="rotate(45.001 24 24)"></path><path fill="#F44336" d="M21.5 4.5H26.5V43.501H21.5z" transform="rotate(135.008 24 24)"></path></svg>',
+                customClass: {
+                    popup: 'swal-wide',
+                    icon: 'custom-icon',
+                    title: 'custom-title',
+                    text: 'custom-text',
+                    confirmButton: 'custom-confirm-button'
+                }
+            });
+        });
+        </script>
+HTML;
+    } else {
+        // Check if passwords match
+        if ($password !== $con_password) {
+            echo <<<HTML
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    title: 'Oops...',
+                    text: 'Passwords do not match.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#6C63FF',
+                    iconHtml: '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 48 48" role="img"><path fill="#F44336" d="M21.5 4.5H26.501V43.5H21.5z" transform="rotate(45.001 24 24)"></path><path fill="#F44336" d="M21.5 4.5H26.5V43.501H21.5z" transform="rotate(135.008 24 24)"></path></svg>',
+                    customClass: {
+                        popup: 'swal-wide',
+                        icon: 'custom-icon',
+                        title: 'custom-title',
+                        text: 'custom-text',
+                        confirmButton: 'custom-confirm-button'
+                    }
+                });
+            });
+            </script>
+HTML;
+        } else {
+            // Hash the password if provided
+            if (!empty($password)) {
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $sql_update = "UPDATE users SET username = ?, email = ?, address = ?, phone = ?, password = ? WHERE user_id = ?";
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->bind_param('sssssi', $name, $email, $address, $phone, $hashed_password, $user_id);
+            } else {
+                $sql_update = "UPDATE users SET username = ?, email = ?, address = ?, phone = ? WHERE user_id = ?";
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->bind_param('ssssi', $name, $email, $address, $phone, $user_id);
+            }
+
+            if ($stmt_update->execute()) {
+                echo <<<HTML
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+                <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'User updated successfully.',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.href = 'users.php'; // Redirect to the users page
+                    });
+                });
+                </script>
+HTML;
+            } else {
+                echo "Error: " . htmlspecialchars($stmt_update->error);
+            }
+            $stmt_update->close();
+        }
+    }
+}
+
 // Fetch and display users
 $sql = "SELECT * FROM users";
 $result = $conn->query($sql);
 
-// Function to get role name
 function roleyname($role_id)
 {
     global $conn;
@@ -166,45 +346,6 @@ function roleyname($role_id)
     return $role_name;
 }
 
-
-
-
-?>
-<?php
-// Handle updating the user
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
-    $user_id = $_POST['user_id'];
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $address = $_POST['address'];
-    $phone = $_POST['phone'];
-    $password = $_POST['password'];
-    $con_password = $_POST['con_password'];
-
-    // Check if passwords match
-    if ($password !== $con_password) {
-        echo "<script>alert('Passwords do not match');</script>";
-    } else {
-        // Hash the password if it's provided
-        if (!empty($password)) {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $sql_update = "UPDATE users SET username = ?, email = ?, address = ?, phone = ?, password = ? WHERE user_id = ?";
-            $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bind_param('sssssi', $name, $email, $address, $phone, $hashed_password, $user_id);
-        } else {
-            $sql_update = "UPDATE users SET username = ?, email = ?, address = ?, phone = ? WHERE user_id = ?";
-            $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bind_param('ssssi', $name, $email, $address, $phone, $user_id);
-        }
-
-        $stmt_update->execute();
-        $stmt_update->close();
-
-        // Redirect to the same page to reflect changes
-        header("Location: " . $_SERVER['PHP_SELF']);
-        exit();
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -234,17 +375,103 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <style>
-    .button.create {
+    .btnlogout {
+        --primary-color: #007bff;
+        --secondary-color: #fff;
+        --hover-color: #10539b;
+        --arrow-width: 10px;
+        --arrow-stroke: 2px;
+        box-sizing: border-box;
+        border: 0;
         border-radius: 20px;
+        color: var(--secondary-color);
+        padding: 1em 1.8em;
+        background: var(--primary-color);
+        display: flex;
+        transition: 0.2s background;
+        align-items: center;
+        gap: 0.6em;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .Cr-btn {
+        font-weight: bold;
+        transition: 0.2s background;
+        padding: 1em 1.8em;
+        border-radius: 20px;
+        cursor: pointer;
         width: 14%;
         background-color: #007bff;
         color: white;
         margin-left: 22px;
     }
 
+    .Cr-btn:hover {
+        background: #10539b;
+    }
+
+    .Ed-btn {
+        cursor: pointer;
+        font-size: large;
+        border: none;
+        padding: 1px;
+        height: 50%;
+        width: 20%;
+        background: none;
+    }
+
+    .Ed-btn:hover {
+        transition: hight 2s;
+
+    }
+
+    .del-btn {
+        cursor: pointer;
+        font-size: large;
+        border: none;
+        padding: 1px;
+        height: 50%;
+        width: 20%;
+        background: none;
+    }
+
+    .table-container th,
+    .table-container td {
+        padding-top: 31px;
+        text-align: left;
+        padding-bottom: 31px;
+    }
+
+    .table-container tr:nth-child(even) td {
+        background-color: #ffffff;
+    }
+
+    .table-container td {
+        border-bottom: solid #c3c3c3 1px;
+
+        color: #000;
+        background-color: #ffffff;
+    }
+
+    /* ------------perfect css -------- */
+
+    /* .button.create {
+        border-radius: 20px;
+        width: 14%;
+        background-color: #007bff;
+        color: white;
+        margin-left: 22px;
+    } */
+
     .admin {
         color: #000;
     }
+    
+       * {
+            font-family: "Montserrat", sans-serif;
+
+        }
 </style>
 
 <body>
@@ -255,7 +482,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
                 <span class="material-icons-outlined">menu</span>
             </div>
             <div class="header-left">
-                <h2 class="admin">Welcome , <?php echo htmlspecialchars($user['username']); ?></h2>
+                <h2 class="admin">Welcome, <?php echo htmlspecialchars($user['username']); ?></h2>
             </div>
             <div class="header-right">
                 <span class="material-icons-outlined">
@@ -295,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
         <div class="shadow" id="createForm">
             <!-- Form for creating a new user -->
             <form class="form" method="POST">
-                <span class="title">Add User</span>
+                <span class="title"  style = " font-family:Montserrat, sans-serif;">Add User</span>
 
                 <div class="input-container">
                     <label class="color_line" for="name">Name</label>
@@ -322,8 +549,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
                     <input type="password" name="con_password" placeholder="Confirm Password" required />
                 </div>
 
-                <button style="width: 22%;" type="submit" name="create" class="button create">Create User</button>
-                <button style=" background-color:#000" type="button" class="button"
+                <button style="width: 100%; background:#007bff" type="submit" name="create" class="button">Create User</button>
+                <button style="border-radius: 5px; color: #000;  margin-left:1px;  background:rgb(247, 243, 243);  width: 100%;" type="button" class="Cr-btn"
                     onclick="toggleForm('createForm')">Close</button>
             </form>
         </div>
@@ -331,38 +558,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
         <!-- Start update_popup window  -->
         <!-- Update User Form -->
         <div class="shadow" id="EditForm" style="display: none;">
-            <form class="form" method="POST">
-                <span class="title">Update User</span>
+            <form style="color:#000;" class="form" method="POST">
+                <span class="title" >Update User</span>
 
                 <input type="hidden" name="user_id" value="<?php echo isset($user['user_id']) ? htmlspecialchars($user['user_id']) : ''; ?>" />
 
                 <div class="input-container">
-                    <input type="text" name="name" value="<?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?>" required />
                     <label for="name">Full Name</label>
+                    <input type="text" name="name" value="<?php echo isset($user['username']) ? htmlspecialchars($user['username']) : ''; ?>" required />
                 </div>
                 <div class="input-container">
-                    <input type="email" name="email" value="<?php echo isset($user['email']) ? htmlspecialchars($user['email']) : ''; ?>" required />
                     <label for="email">Email</label>
+                    <input type="email" name="email" value="<?php echo isset($user['email']) ? htmlspecialchars($user['email']) : ''; ?>" required />
                 </div>
                 <div class="input-container">
-                    <input type="text" name="address" value="<?php echo isset($user['address']) ? htmlspecialchars($user['address']) : ''; ?>" required />
                     <label for="address">Address</label>
+                    <input type="text" name="address" value="<?php echo isset($user['address']) ? htmlspecialchars($user['address']) : ''; ?>" required />
                 </div>
                 <div class="input-container">
-                    <input type="tel" name="phone" value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>" required />
                     <label for="phone">Phone</label>
+                    <input type="tel" name="phone" value="<?php echo isset($user['phone']) ? htmlspecialchars($user['phone']) : ''; ?>" required />
                 </div>
                 <div class="input-container">
-                    <input type="password" name="password" />
                     <label for="password">Password (Leave blank to keep current)</label>
+                    <input type="password" name="password" />
                 </div>
                 <div class="input-container">
-                    <input type="password" name="con_password" />
                     <label for="con_password">Confirm Password</label>
+                    <input type="password" name="con_password" />
                 </div>
 
-                <button style="width: 22%;" type="submit" name="update" class="button create">Update User</button>
-                <button style=" background-color:#000" type="button" class="button" onclick="toggleForm('EditForm')">Close</button>
+                <button style=" border-radius: 5px; width: 100%; margin:0; " type="submit" name="update" class="Cr-btn">Update User</button>
+                <button style=" color: #000;  margin-left:1px;  background: rgb(247, 243, 243); border-radius: 5px; width: 100%;" type="button" class="Cr-btn" onclick="toggleForm('EditForm')">Close</button>
             </form>
         </div>
 
@@ -372,8 +599,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
         <!-- Main Content -->
         <main class="main-container">
             <h2 style="color:#666666; text-align:center; font-weight: bold;">USERS</h2>
-            <div style="justify-content: flex-end;" class="main-title">
-                <button id="Add_user" class="button create" onclick="toggleForm('createForm')">Add User</button>
+            <div style="justify-content: flex-end; padding-right: 1rem;" class="main-title">
+                <button id=" Add_user" class="Cr-btn" onclick="toggleForm('createForm')" style = " font-family:Montserrat, sans-serif;">Add User</button>
             </div>
 
             <div class="table-container">
@@ -391,26 +618,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update'])) {
                     </thead>
                     <tbody>
                         <?php
+                        // Corrected the if condition
                         while ($row = $result->fetch_assoc()) {
-                            echo "<tr>";
-                            echo "<td>" . htmlspecialchars($row['user_id']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['username']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['email']) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
-                            echo "<td>" . htmlspecialchars(roleyname($row['role_id'])) . "</td>";
-                            echo "<td>" . htmlspecialchars($row['address']) . "</td>";
-
-                            echo "<td>
-        <form method='POST' style='display: inline;'>
-            <input type='hidden' name='user_id' value='" . htmlspecialchars($row['user_id']) . "' />
-            <button class='button edit' type='button' onclick='editUser(" . htmlspecialchars(json_encode($row)) . ")'> <i class='fa-solid fa-edit' style='color: #ffffff;'></i></button>
-            <button class='button delete' type='submit' name='delete'>Delete</button>
-        </form>
-     
-    </td>";
-                            echo "</tr>";
+                            if (roleyname($row['role_id']) == 'user') {
+                                echo "<tr>";
+                                echo "<td>" . htmlspecialchars($row['user_id']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['username']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['email']) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['phone']) . "</td>";
+                                echo "<td>" . htmlspecialchars(roleyname($row['role_id'])) . "</td>";
+                                echo "<td>" . htmlspecialchars($row['address']) . "</td>";
+                                echo "<td>
+            <form method='POST' style='display: inline;'>
+                <input type='hidden' name='user_id' value='" . htmlspecialchars($row['user_id']) . "' />
+                <button class='del-btn' type='button' onclick='editUser(" . htmlspecialchars(json_encode($row)) . ")'>
+                    <i class='fa-solid fa-pencil' style='color: #48b712; height: 20px;'></i>
+                </button>
+                <button class='Ed-btn' type='submit' name='delete'>
+                    <i class='fa-solid fa-x' style='color: #ed2e0c;'></i>
+                </button>
+            </form>
+        </td>";
+                                echo "</tr>";
+                            }
                         }
                         ?>
+
 
                     </tbody>
                 </table>
