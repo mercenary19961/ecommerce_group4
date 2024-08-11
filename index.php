@@ -76,15 +76,15 @@ function display_products($category_id, $category_name) {
 <html>
 
 <head>
-    <title>Mac Store</title>
+    <title>Mac Store | Your One-Stop Shop for Apple Products</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="author" content="">
-    <meta name="keywords" content="">
-    <meta name="description" content="">
+    <link rel="canonical" href="https://www.macstore.com/">
+    <meta name="keywords" content="Apple, iPhone, iPad, Mac, Apple Accessories, Mac Store, Buy Apple Products">
+    <meta name="description" content="Discover the latest Apple products at Mac Store. Shop iPhones, iPads, Macs, and accessories. Enjoy fast shipping and excellent customer service.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
@@ -216,6 +216,101 @@ function display_products($category_id, $category_name) {
     }
     .hidden {
         display: none;
+    }
+    .footer_a {
+        margin-left: 30px;
+    }
+    /* General Footer Styling */
+#footer-bottom {
+    background-color: #f8f9fa; /* Light background color */
+    padding: 20px 0;
+    font-size: 14px;
+    color: #717171; /* Text color */
+}
+
+#footer-bottom .container1 {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+#footer-bottom p {
+    margin: 0;
+}
+
+#footer-bottom .card-wrap img {
+    max-height: 40px;
+    margin-right: 10px;
+}
+
+    @media (max-width: 1200px) {
+        .swiper-slide {
+            width: calc(50% - 20px) !important; /* Adjust this width based on your layout */
+        }
+        #footer-bottom .container1 {
+            padding: 0 40px !important;
+        }
+        .footer_a {
+            margin-left: 1px !important;
+        }
+
+        #footer-bottom .row {
+            justify-content: space-between !important; /* Ensure spacing between elements */
+        }
+
+        #footer-bottom .col-md-3,
+        #footer-bottom .col-md-4,
+        #footer-bottom .col-sm-3,
+        #footer-bottom .col-sm-4 {
+            width: 30% !important; /* Slightly reduce the width */
+            text-align: left !important;
+        }
+    }
+    @media (max-width: 768px) {
+        .swiper-slide {
+            width: calc(100% - 20px) !important; /* For smaller screens, you might want one card per view */
+        }
+        #footer-bottom .row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: space-around !important; /* Space items evenly */
+        }
+
+        #footer-bottom .col-md-3,
+        #footer-bottom .col-md-4,
+        #footer-bottom .col-sm-3,
+        #footer-bottom .col-sm-4 {
+            width: 48% !important; /* Make items take up half the width */
+            margin-bottom: 20px !important;
+            text-align: center !important;
+        }
+
+        #footer-bottom .Shipping,
+        #footer-bottom .payment-method,
+        #footer-bottom .copyright {
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        .payment-method {
+            width: 250px !important;
+        }
+        h3 {
+            font-size: 1.5rem !important; /* Adjust as needed */
+            line-height: 1.5;
+            color: black !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6) !important; /* A subtle black shadow */
+        }
+        
+    }
+    @media (max-width: 1200px) {
+        .payment-method {
+            width: 190px !important;
+        }
+        h3 {
+            font-size: 3.5rem; /* Adjust as needed */
+            line-height: 1.5;
+        }
+        
     }
     </style>
 </head>
@@ -409,9 +504,6 @@ function display_products($category_id, $category_name) {
     </header>
 
     <section id="billboard" class="position-relative overflow-hidden bg-light-blue">
-
-        <!--About us slider-->
-
         <div class="swiper main-swiper">
             <div class="swiper-wrapper">
                 <div class="swiper-slide">
@@ -604,7 +696,7 @@ function display_products($category_id, $category_name) {
                 <div class="col-md-4 col-sm-4">
                     <div class="copyright" style="line-hight:3px" style="color:#717171">
                         <p>©Copyright2024MacStore.
-                            <a href="contact.html" style="text-decoration:none ; color:#AEAEAE ; margin-left: 30px;">contact us</a>
+                            <a class="footer_a" href="contact.html" style="text-decoration:none ; color:#AEAEAE">contact us</a>
                         </p>
                     </div>
                 </div>
@@ -621,10 +713,10 @@ function display_products($category_id, $category_name) {
     // Sliders pagination dots script
     document.addEventListener('DOMContentLoaded', function () {
         var sliders = document.querySelectorAll('.product-swiper');
-        
+
         sliders.forEach(function (slider) {
             new Swiper(slider, {
-                slidesPerView: 4, // Adjust as per your layout
+                slidesPerView: 4, // Default number of slides
                 spaceBetween: 30,
                 loop: true,
                 pagination: {
@@ -635,9 +727,20 @@ function display_products($category_id, $category_name) {
                     nextEl: '.swiper-arrow-next',
                     prevEl: '.swiper-arrow-prev',
                 },
+                breakpoints: {
+                    768: {
+                        slidesPerView: 2, // Display 2 slides when screen width is 768px or more
+                        spaceBetween: 20,
+                    },
+                    1200: {
+                        slidesPerView: 4, // Display 4 slides when screen width is 1200px or more
+                        spaceBetween: 30,
+                    }
+                }
             });
         });
     });
+
 
     // For adding products to cart
     $(document).ready(function() {

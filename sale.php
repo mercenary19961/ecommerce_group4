@@ -43,7 +43,7 @@ $discounts = [50, 40, 30, 20, 10];
 
         // Display section
         echo "<div id='discount-{$discountPercentage}' class='discount-section'>";
-        echo "<br> <br> <h2>Discount {$discountPercentage}%</h2> <br> <br>";
+        echo "<br> <br> <h2>Discount Section {$discountPercentage}% </h2> <br> <br>";
 
         if ($result->num_rows > 0) {
             echo '<div class="row">'; 
