@@ -125,6 +125,7 @@ include 'includes/header.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Cart</title>
     <style>
         .btn-custom {
@@ -253,8 +254,8 @@ include 'includes/header.php';
             </table>
             <div class="button-group">
                 <div>
-                    <a href="checkout.php?method=cash" class="btn btn-primary">Pay in Cash</a>
-                    <a href="credit_card_payment.php" class="btn btn-secondary">Pay with Credit</a>
+                    <button onclick="checkLogin('cash')" class="btn btn-primary">Pay in Cash</button>
+                    <button onclick="checkLogin('credit')" class="btn btn-secondary">Pay with Credit</button>
                 </div>
                 <div class="right-align">
                     <a href="products.php" class="btn btn-secondary">Back</a>
@@ -274,6 +275,35 @@ include 'includes/header.php';
             </form>
         <?php endif; ?>
     </main>
+    
+    <script>
+        function checkLogin(paymentMethod) {
+            <?php if (!$isLoggedIn): ?>
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'You need to login first!',
+                    text: 'Please login to proceed with the payment.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Login',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        confirmButton: 'swal-custom-button'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = 'login.php';
+                    }
+                });
+            <?php else: ?>
+                if (paymentMethod === 'cash') {
+                    window.location.href = 'checkout.php?method=cash';
+                } else if (paymentMethod === 'credit') {
+                    window.location.href = 'credit_card_payment.php';
+                }
+            <?php endif; ?>
+        }
+    </script>
 </body>
 </html>
+
 <?php include 'includes/footer.php'; ?>

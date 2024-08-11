@@ -97,7 +97,7 @@ class User {
 
         // Prepare SQL statement to prevent SQL injection
         $stmt = $this->conn->prepare("INSERT INTO users (username, email, address, password, phone, role_id) VALUES (?, ?, ?, ?, ?, 2)");
-        $stmt->bind_param("ssssi", $username, $email, $address, $hashed_password, $phone);
+        $stmt->bind_param("sssss", $username, $email, $address, $hashed_password, $phone);
 
         if ($stmt->execute()) {
             $stmt->close();

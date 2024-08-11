@@ -644,7 +644,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                     <input type="number" name="stock" required />
                 </div>
                 <div class="input-container">
-                    <label for="category_id" class="color_line">Category ID</label>
+                    <label for="category_id" class="color_line">Category</label>
                     <select style=" width:109% ; border: 1px solid #ddd; outline: none; padding: 12px 16px; background-color: rgb(247, 243, 243); border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: border-color 0.3s ease, box-shadow 0.3s ease;" name="category_id" required>
                         <?php
                         $category_query = "SELECT * FROM category";

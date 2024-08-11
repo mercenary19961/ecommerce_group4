@@ -30,7 +30,7 @@ include 'includes/header.php';
         <h1>Checkout</h1>
         <p>Processing your order...</p>
     </div>
-
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const method = "<?php echo $method; ?>";
